@@ -15,7 +15,11 @@ Notion master TODO: https://app.notion.com/p/3cb30fe6e4e68167bf3bde0a4bdb6b5d?pv
 - [ ] Measure sustained sequential read bandwidth per channel and combined.
 - [ ] Confirm current x72 physical / ECC-on x64-payload behavior.
 - [ ] Test `x72 + ECC off` as full 72-bit payload; characterize calibration, timing and sustained bandwidth.
-- [ ] Treat DDR4-2133 as baseline; do not rely on DDR4-2400.
+- [ ] Treat DDR4-2133 as the guaranteed baseline; higher rates are experimental until measured on Rev E.
+- [ ] Keep the measured ~266.667 MHz DDR reference clock fixed and test higher DDR memory rates through EMIF/PLL parameter changes rather than changing the board oscillator.
+- [ ] Sweep DDR4-2133 → 2200/2266 → 2400, and optionally 2666 only if Quartus/EMIF generation permits it; the installed DRAM is rated for 2666 but FPGA/PHY/PCB margin is unknown.
+- [ ] For every overclock point, require repeated power-on calibration, EMIF Toolkit margin checks where available, PRBS/walking-pattern stress, dual-channel simultaneous traffic, sustained bandwidth measurement, and hot-board retest.
+- [ ] Record the exact PLL/refclk/memory-clock parameters and Quartus timing/calibration results for every passing/failing point.
 - [ ] Schedule long sequential weight bursts and interleave KV without starving weight traffic.
 - [ ] Check whether x64→x72 extra bandwidth is enough to hide 3-bit KV traffic at the target decode rate.
 - [ ] Record real EMIF stall/burst traces for cycle-level modeling.
