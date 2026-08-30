@@ -287,8 +287,14 @@ Questa FSE 2024.3 `vlog` compiles all three rewritten kernels and the
 testbench with zero errors. On this host `vsim` then fails while loading any
 optimized design with Windows error `0x80096010`, even though `vopt` succeeds
 and executable signatures validate. Local functional simulation is therefore
-`BLOCKED`; the manual GitHub workflow runs the same testbench with Icarus.
-No Fmax or functional-pass value is invented for a blocked run.
+`BLOCKED`. The same testbench passed in GitHub Actions with Icarus: bit-exact
+NumPy golden comparison, the 244-cycle TL5 table build, and a bubble-free II=1
+stream all passed. The successful manual run is
+[33334886599](https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599),
+and its compact result bundle is
+[model-selection-v2-small-results](https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599/artifacts/9738727249).
+No Fmax value is inferred from simulation, and no local simulation pass is
+claimed for the blocked Questa run.
 
 ## Bankai option
 
@@ -324,4 +330,7 @@ C:\msv2env\Scripts\python.exe rtl\microbench\run_quartus_sweep.py --quartus E:\A
 
 `scripts/run_model_selection_v2.sh` contains the complete sequential model
 commands. The workflow is manual because model downloads/runs do not belong on
-every push. Only compact JSON/Markdown/log artifacts are uploaded.
+every push. The Linux unit/roof checks and RTL functional smoke passed on the
+tested code commit `b3894b37f9d7b192703583c74c609c9b3fdbf98e`; only compact
+JSON/Markdown/log artifacts are uploaded. The successful workflow and artifact
+links are recorded above and in `results/model_selection_v2/toolchain.json`.

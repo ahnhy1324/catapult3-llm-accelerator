@@ -29,8 +29,16 @@
     "evidence_tag": "BLOCKED"
   },
   "iverilog_github_actions": {
-    "status": "PENDING_WORKFLOW_RUN",
+    "status": "PASS",
     "workflow": ".github/workflows/model-selection-v2.yml",
-    "evidence_tag": "BLOCKED"
+    "run_url": "https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599",
+    "artifact_name": "model-selection-v2-small-results",
+    "artifact_url": "https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599/artifacts/9738727249",
+    "checks": [
+      "bit-exact NumPy golden comparison",
+      "244-cycle TL5 table build",
+      "bubble-free II=1 stream"
+    ],
+    "evidence_tag": "MEASURED_CPU"
   }
 }
