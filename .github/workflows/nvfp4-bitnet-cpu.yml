@@ -76,7 +76,7 @@ jobs:
           Continue this sentence with a short technical paragraph: An old FPGA card can still be useful when
           EOF
 
-      - name: Run baseline, row16 and block16x16 on CPU
+      - name: Run compact CPU PPL and logits comparison
         working-directory: experiments/nvfp4_bitnet
         shell: bash
         run: |
@@ -89,10 +89,10 @@ jobs:
             --layouts row16 block16x16 \
             --chunk-rows 32 \
             --prompts-file cpu_prompts.txt \
-            --max-new-tokens 12 \
+            --skip-generation \
             --ppl \
-            --ppl-tokens 1024 \
-            --ppl-seq-len 256 \
+            --ppl-tokens 256 \
+            --ppl-seq-len 128 \
             --output-dir results/cpu_quality \
             2>&1 | tee results/cpu_quality/run.log
 
