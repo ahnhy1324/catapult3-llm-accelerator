@@ -18,8 +18,8 @@ jobs:
       HF_HOME: ${{ github.workspace }}/.hf-cache
       HF_HUB_ENABLE_HF_TRANSFER: "0"
       TOKENIZERS_PARALLELISM: "false"
-      OMP_NUM_THREADS: "2"
-      MKL_NUM_THREADS: "2"
+      OMP_NUM_THREADS: "4"
+      MKL_NUM_THREADS: "4"
     steps:
       - uses: actions/checkout@v4
 
@@ -33,7 +33,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
-          python -m pip install "transformers>=4.51,<5" "accelerate>=0.30" "safetensors>=0.4" "huggingface_hub[hf_xet]" "pytest>=8"
+          python -m pip install \
+            "git+https://github.com/huggingface/transformers.git@096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4" \
+            "accelerate>=0.30" "safetensors>=0.4" "huggingface_hub[hf_xet]" "pytest>=8"
 
       - name: Unit-test NVFP4 quantizer
         working-directory: experiments/nvfp4_bitnet
@@ -51,6 +53,18 @@ jobs:
           print("threads", torch.get_num_threads())
           PY
 
+      - name: Disable broken remote-code mapping
+        working-directory: experiments/nvfp4_bitnet
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("evaluate.py")
+          text = path.read_text(encoding="utf-8")
+          text = text.replace(", trust_remote_code=True", "")
+          text = text.replace("trust_remote_code=True, ", "")
+          path.write_text(text, encoding="utf-8")
+          PY
+
       - name: Create compact prompt set
         working-directory: experiments/nvfp4_bitnet
         run: |
@@ -61,7 +75,9 @@ jobs:
 
       - name: Run baseline vs row16 NVFP4 on CPU
         working-directory: experiments/nvfp4_bitnet
+        shell: bash
         run: |
+          set -o pipefail
           mkdir -p results/cpu_smoke
           /usr/bin/time -v python evaluate.py \
             --device cpu \
