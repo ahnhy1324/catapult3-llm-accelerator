@@ -8,14 +8,17 @@ module tb_microbench;
     logic rst_n = 1'b0;
 
     logic binary_valid;
-    logic [127:0] binary_weight;
-    logic signed [7:0] binary_activation [0:127];
-    logic signed [15:0] binary_scale [0:0];
+    // Icarus collapses a one-element unpacked array port during elaboration.
+    // Use two g128 groups and zero the second group; this also exercises the
+    // cross-group pipeline while preserving the 128-lane golden result.
+    logic [255:0] binary_weight;
+    logic signed [7:0] binary_activation [0:255];
+    logic signed [15:0] binary_scale [0:1];
     logic binary_out_valid;
     logic signed [15:0] binary_out;
     logic binary_saturation;
     bonsai_binary_g128_dot #(
-        .LANES(128), .GROUP_SIZE(128), .ACT_W(8), .ACC_W(14),
+        .LANES(256), .GROUP_SIZE(128), .ACT_W(8), .ACC_W(14),
         .SCALE_W(16), .SCALE_FRAC(1), .OUT_W(16), .PIPE_DEPTH(2)
     ) binary_dut (
         .clk, .rst_n, .in_valid(binary_valid), .weight_sign(binary_weight),
@@ -121,9 +124,15 @@ module tb_microbench;
             @(negedge clk);
             binary_valid = 1;
             binary_scale[0] = binary_scale_vector[vector_index];
-            for (lane_index = 0; lane_index < 128; lane_index = lane_index + 1) begin
-                binary_activation[lane_index] = binary_activation_vector[vector_index][lane_index];
-                binary_weight[lane_index] = binary_sign_vector[vector_index][lane_index] > 0;
+            binary_scale[1] = '0;
+            for (lane_index = 0; lane_index < 256; lane_index = lane_index + 1) begin
+                if (lane_index < 128) begin
+                    binary_activation[lane_index] = binary_activation_vector[vector_index][lane_index];
+                    binary_weight[lane_index] = binary_sign_vector[vector_index][lane_index] > 0;
+                end else begin
+                    binary_activation[lane_index] = '0;
+                    binary_weight[lane_index] = 1'b0;
+                end
             end
         end
         @(negedge clk);
