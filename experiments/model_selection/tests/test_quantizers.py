@@ -112,3 +112,53 @@ def test_bankai_attention_projection_bit_exact():
 
 def test_bankai_mlp_projection_bit_exact():
     _bankai_case(rows=96, cols=256, tokens=5)
+
+
+def _rne_shift_int(value: int, fraction_bits: int) -> int:
+    magnitude = abs(value)
+    quotient, remainder = divmod(magnitude, 1 << fraction_bits)
+    half = 1 << (fraction_bits - 1)
+    if remainder > half or (remainder == half and quotient & 1):
+        quotient += 1
+    return -quotient if value < 0 else quotient
+
+
+def test_bankai_remains_exact_across_signed_scale_and_group_rne_without_saturation():
+    generator = torch.Generator().manual_seed(20260831)
+    activation = torch.randint(-127, 128, (4, 256), generator=generator, dtype=torch.int16)
+    signs = torch.where(torch.rand((7, 256), generator=generator) > 0.5, 1, -1).to(torch.int8)
+    scales = [-17, 31]
+    baseline_groups = []
+    flipped_groups = []
+    for group in range(2):
+        base = binary_integer_accumulator(activation[:, group * 128 : (group + 1) * 128], signs[:, group * 128 : (group + 1) * 128])
+        flipped = binary_integer_accumulator(activation[:, group * 128 : (group + 1) * 128], -signs[:, group * 128 : (group + 1) * 128])
+        baseline_groups.append(torch.tensor([[_rne_shift_int(int(value) * scales[group], 5) for value in row] for row in base]))
+        flipped_groups.append(torch.tensor([[_rne_shift_int(int(value) * scales[group], 5) for value in row] for row in flipped]))
+    baseline = sum(baseline_groups)
+    flipped = sum(flipped_groups)
+    assert torch.equal(flipped, -baseline)
+
+
+def test_bankai_twos_complement_minimum_breaks_post_saturation_negation():
+    value = torch.tensor([-(1 << 19)], dtype=torch.int64)
+    saturated, _ = saturate_signed_accumulator(value, 20)
+    negated_then_saturated, _ = saturate_signed_accumulator(-value, 20)
+    assert -saturated.item() == 1 << 19
+    assert negated_then_saturated.item() == (1 << 19) - 1
+
+
+def test_bankai_patch_must_precede_residual_add():
+    projection = torch.tensor([120, -90], dtype=torch.int64)
+    residual = torch.tensor([7, 11], dtype=torch.int64)
+    correct = -projection + residual
+    wrong_patch_after_residual = -(projection + residual)
+    assert not torch.equal(correct, wrong_patch_after_residual)
+
+
+def test_bankai_patch_before_quantized_output_cast_avoids_asymmetric_minimum():
+    wide = torch.tensor([130, -128], dtype=torch.int64)
+    cast_then_patch, _ = saturate_signed_accumulator(wide, 8)
+    cast_then_patch = -cast_then_patch
+    patch_then_cast, _ = saturate_signed_accumulator(-wide, 8)
+    assert not torch.equal(cast_then_patch, patch_then_cast)

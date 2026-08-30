@@ -1,0 +1,528 @@
+{
+  "schema_version": "catapult3-model-selection-result-v2",
+  "run_id": "falcon3-1b-instruct-1.58bit-limited-smoke",
+  "run_mode": "smoke",
+  "status": "PASS",
+  "evidence_tags": [
+    "MEASURED_CPU",
+    "MEASURED_MODEL_FILE",
+    "CALCULATED_FROM_CONFIG",
+    "BLOCKED"
+  ],
+  "environment": {
+    "python": "3.13.14",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "torch": "2.13.0+cpu",
+    "transformers": "4.52.0.dev0",
+    "safetensors": "0.8.0",
+    "numpy": "2.5.2",
+    "seed": 20260831,
+    "torch_threads": 8,
+    "deterministic_algorithms": true,
+    "byte_order": "little"
+  },
+  "model": {
+    "model_id": "tiiuae/Falcon3-1B-Instruct-1.58bit",
+    "architecture": "LlamaForCausalLM with BitNet linear modules",
+    "parameter_class": "1B-class native 1.58-bit instruct",
+    "geometry": {
+      "hidden_size": 2048,
+      "intermediate_size": 8192,
+      "layers": 18,
+      "query_heads": 8,
+      "kv_heads": 4,
+      "head_dim": 256,
+      "vocab_size": 131072,
+      "tied_word_embeddings": false,
+      "body_major_linear_weight_elements": 1132462080,
+      "lm_head_weight_elements": 268435456,
+      "e2e_linear_weight_elements_per_token": 1400897536,
+      "ideal_lanes_for_100_tps_at_225MHz": 622.6211271111112,
+      "evidence_tag": "CALCULATED_FROM_CONFIG"
+    },
+    "license": "TII Falcon License 2.0"
+  },
+  "checkpoint": {
+    "revision": "72fd3f95fcd82639c902304919629edda8c6f2b4",
+    "manifest": "experiments\\model_selection\\artifact_manifest_v2.json",
+    "files": [
+      {
+        "role": "weight",
+        "name": "model.safetensors",
+        "byte_size": 1357042252,
+        "sha256": "3d536c681c4722e5263d413d85d243a1302217a245e4b55de93ece8a6ef30b15",
+        "verification": "MEASURED_LOCAL_BYTES"
+      },
+      {
+        "role": "config",
+        "name": "config.json",
+        "byte_size": 878,
+        "sha256": "b099fc7d12764a50b1ead4f781cf055d869568cb84937b4dc50cb80f98b33000",
+        "verification": "MEASURED_LOCAL_BYTES"
+      },
+      {
+        "role": "generation_config",
+        "name": "generation_config.json",
+        "byte_size": 118,
+        "sha256": "1c7c1f27c024e3c010f781417ff9baf8e6e6fd4ee3ec4a468cd3f218b73f2134",
+        "verification": "MEASURED_LOCAL_BYTES"
+      },
+      {
+        "role": "special_tokens_map",
+        "name": "special_tokens_map.json",
+        "byte_size": 826,
+        "sha256": "1d14eedf90af206dde753809a93b13ff59c5bbc424f3e54c02bca1a26b982f37",
+        "verification": "MEASURED_LOCAL_BYTES"
+      },
+      {
+        "role": "tokenizer_json",
+        "name": "tokenizer.json",
+        "byte_size": 9780754,
+        "sha256": "96c1b62711ea59cb36cf4ab46cc551fc64b2168ac0a288448026088fb9ec7f4a",
+        "verification": "MEASURED_LOCAL_BYTES"
+      },
+      {
+        "role": "tokenizer_config",
+        "name": "tokenizer_config.json",
+        "byte_size": 364623,
+        "sha256": "2e6f9ee711000ac383a007148159f3b9d8b23bf32efc593f1156c6ba65cddaef",
+        "verification": "MEASURED_LOCAL_BYTES"
+      }
+    ],
+    "safetensors_header_health": {
+      "tensor_count": 291,
+      "duplicate_tensor_names": [],
+      "unsupported_dtypes": [],
+      "invalid_shapes": [],
+      "overlapping_data_ranges": [],
+      "evidence_tag": "MEASURED_MODEL_FILE"
+    }
+  },
+  "backend": {
+    "name": "Transformers/PyTorch CPU",
+    "revision": "096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4",
+    "execution_path": "AutoModelForCausalLM native BitNet modules with eager CPU weight unpack"
+  },
+  "health": {
+    "finite": true,
+    "nonfinite_tensors": [],
+    "all_zero_tensors": [],
+    "all_zero_whitelist": [],
+    "unapproved_all_zero_tensors": [],
+    "missing_tensors": [],
+    "unexpected_tensors": [],
+    "shape_mismatches": [],
+    "duplicate_parameter_names": [],
+    "abnormal_scales": [],
+    "parameter_count": 536946688
+  },
+  "baseline": {
+    "logits_sha256": "97c1119cd76288d5c852a2b6045e124409ec4540c04c27b315666eb1ce1a9e06",
+    "prompts": [
+      {
+        "prompt": "What is the capital of France? Answer in one short sentence.",
+        "input_tokens": 38,
+        "generated_token_ids": [
+          2530,
+          6445,
+          2306,
+          7909,
+          2340,
+          9259,
+          2037,
+          11
+        ],
+        "generated_text": "The capital of France is Paris.",
+        "health_flags": [],
+        "top10_token_ids": [
+          2530,
+          41308,
+          75118,
+          4226,
+          2705,
+          7309,
+          2067,
+          2058,
+          3183,
+          66881
+        ],
+        "top10_logits": [
+          18.375,
+          17.125,
+          14.375,
+          13.9375,
+          13.4375,
+          13.3125,
+          13.25,
+          12.8125,
+          12.6875,
+          12.625
+        ]
+      },
+      {
+        "prompt": "Alice has 12 apples, gives away 5, and buys 3 more. How many apples does she have?",
+        "input_tokens": 50,
+        "generated_token_ids": [
+          47623,
+          7580,
+          2368,
+          2226,
+          2040,
+          2041,
+          22367,
+          2037,
+          3471,
+          5820,
+          3791,
+          2226,
+          2044,
+          22367,
+          2035,
+          2561
+        ],
+        "generated_text": "Alice starts with 12 apples. She gives away 5 apples, so",
+        "health_flags": [],
+        "top10_token_ids": [
+          47623,
+          2040,
+          3675,
+          5958,
+          5630,
+          2530,
+          2045,
+          8455,
+          7553,
+          2047
+        ],
+        "top10_logits": [
+          18.625,
+          17.125,
+          16.875,
+          16.125,
+          15.4375,
+          15.3125,
+          15.1875,
+          14.75,
+          14.75,
+          14.375
+        ]
+      },
+      {
+        "prompt": "A box holds 6 rows of 8 bolts. Three bolts from each row are removed. Explain the calculation and give the result.",
+        "input_tokens": 52,
+        "generated_token_ids": [
+          2530,
+          5043,
+          2536,
+          2226,
+          2045,
+          14953,
+          2306,
+          2226,
+          2047,
+          33862,
+          2035,
+          2561,
+          2691,
+          2402,
+          2226,
+          2045
+        ],
+        "generated_text": "The box has 6 rows of 8 bolts, so there are 6",
+        "health_flags": [],
+        "top10_token_ids": [
+          2530,
+          3634,
+          7570,
+          3675,
+          4228,
+          17086,
+          8455,
+          10295,
+          2042,
+          2040
+        ],
+        "top10_logits": [
+          17.75,
+          17.25,
+          16.875,
+          16.625,
+          16.5,
+          16.375,
+          16.25,
+          16.0,
+          15.9375,
+          15.6875
+        ]
+      },
+      {
+        "prompt": "Write a correct Python function named is_prime that returns whether an integer is prime.",
+        "input_tokens": 42,
+        "generated_token_ids": [
+          6518,
+          2340,
+          2265,
+          18206,
+          2991,
+          2361,
+          11394,
+          2567,
+          2265,
+          3354,
+          2340,
+          10624,
+          2049,
+          12,
+          12,
+          25948
+        ],
+        "generated_text": "Here is a Python function that checks if a number is prime:\n\n```",
+        "health_flags": [],
+        "top10_token_ids": [
+          6518,
+          3553,
+          24439,
+          25948,
+          3675,
+          2530,
+          2705,
+          2056,
+          51716,
+          21848
+        ],
+        "top10_logits": [
+          22.125,
+          21.25,
+          21.125,
+          21.125,
+          19.125,
+          18.875,
+          18.625,
+          18.625,
+          18.25,
+          18.25
+        ]
+      },
+      {
+        "prompt": "Explain in three concise sentences how an FPGA memory-bandwidth bottleneck limits LLM decoding.",
+        "input_tokens": 42,
+        "generated_token_ids": [
+          3849,
+          85516,
+          6688,
+          2036,
+          102322,
+          74467,
+          62659,
+          2278,
+          5735,
+          2426,
+          2632,
+          3128,
+          2469,
+          2351,
+          15547,
+          3287
+        ],
+        "generated_text": "An FPGA memory-bandwidth bottleneck restricts the speed at which data can be transferred between",
+        "health_flags": [],
+        "top10_token_ids": [
+          3849,
+          2056,
+          2530,
+          2705,
+          2061,
+          4449,
+          3707,
+          2040,
+          3634,
+          3726
+        ],
+        "top10_logits": [
+          20.375,
+          17.125,
+          17.0,
+          15.6875,
+          15.375,
+          15.1875,
+          14.9375,
+          14.125,
+          14.125,
+          14.0625
+        ]
+      },
+      {
+        "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+        "input_tokens": 70,
+        "generated_token_ids": [
+          2189,
+          2240,
+          2228,
+          91995,
+          2189,
+          2131,
+          2144,
+          104818,
+          2261,
+          98652,
+          24500,
+          103742,
+          111710,
+          2232,
+          91635,
+          2226
+        ],
+        "generated_text": "대한민국의 수도는 ",
+        "health_flags": [],
+        "top10_token_ids": [
+          2189,
+          2190,
+          2188,
+          60660,
+          2191,
+          97580,
+          91995,
+          2025,
+          114571,
+          59409
+        ],
+        "top10_logits": [
+          16.625,
+          15.125,
+          15.0,
+          14.5,
+          14.375,
+          14.1875,
+          14.125,
+          14.0625,
+          13.5625,
+          13.5
+        ]
+      },
+      {
+        "prompt": "저비트 KV 캐시가 언어 모델 추론의 메모리 사용량을 줄이는 원리를 두 문장으로 설명하세요.",
+        "input_tokens": 101,
+        "generated_token_ids": [
+          60660,
+          2228,
+          2189,
+          2141,
+          2232,
+          109138,
+          69087,
+          24500,
+          2142,
+          2244,
+          116729,
+          91635,
+          33351,
+          2239,
+          2121,
+          35104
+        ],
+        "generated_text": "저비트 KV 캐시는 다�",
+        "health_flags": [
+          "UNICODE_REPLACEMENT_CHARACTER"
+        ],
+        "top10_token_ids": [
+          60660,
+          2189,
+          2190,
+          2040,
+          68159,
+          2025,
+          59409,
+          2036,
+          121462,
+          25948
+        ],
+        "top10_logits": [
+          16.375,
+          14.75,
+          14.0625,
+          13.875,
+          12.9375,
+          12.5,
+          12.1875,
+          12.125,
+          12.0,
+          11.875
+        ]
+      },
+      {
+        "prompt": "Continue this paragraph coherently for three sentences: An old FPGA card can still be useful when memory traffic, arithmetic width, and scheduling are designed together.",
+        "input_tokens": 55,
+        "generated_token_ids": [
+          3849,
+          3535,
+          85516,
+          4708,
+          2469,
+          3255,
+          2351,
+          6745,
+          2687,
+          6688,
+          7418,
+          2035,
+          48361,
+          7359,
+          2035,
+          2305
+        ],
+        "generated_text": "An old FPGA card can still be useful when memory traffic, arithmetic width, and",
+        "health_flags": [],
+        "top10_token_ids": [
+          3849,
+          2530,
+          2705,
+          2056,
+          3183,
+          3707,
+          4449,
+          3277,
+          3675,
+          3726
+        ],
+        "top10_logits": [
+          16.375,
+          13.9375,
+          13.625,
+          13.4375,
+          13.3125,
+          12.9375,
+          12.9375,
+          12.75,
+          12.625,
+          12.5
+        ]
+      }
+    ],
+    "perplexity": {
+      "predicted_tokens": 256,
+      "mean_nll": 4.8972079157829285,
+      "perplexity": 133.91535426745585
+    }
+  },
+  "variants": [],
+  "performance": {
+    "wall_seconds": 145.58646179991774,
+    "peak_rss_bytes": 3102273536,
+    "prompt_count": 8,
+    "max_new_tokens_per_prompt": 16
+  },
+  "artifacts": [
+    {
+      "path": "results\\model_selection_v2\\falcon3-1b-instruct-limited.json",
+      "kind": "compact_result_json"
+    }
+  ],
+  "blockers": [
+    {
+      "code": "LIMITED_CANDIDATE_NO_FIXED_BYTE_MATRIX",
+      "impact": "The official untied FP16 LM head makes the fully-on-card memory roof a no-go, so the bounded investigation stops after generation health and smoke PPL.",
+      "evidence_tag": "BLOCKED"
+    }
+  ]
+}

@@ -33,6 +33,8 @@ class QuantizationStats:
     input_abs_p999: float
     scale_min: float
     scale_max: float
+    scale_method: str
+    clip_percentile: float | None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -95,6 +97,7 @@ def symmetric_fake_quantize(
     *,
     group_size: int | None = None,
     collect_percentiles: bool = True,
+    clip_percentile: float | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, QuantizationStats]:
     """Per-token or last-dimension grouped symmetric quantize/dequantize.
 
@@ -118,7 +121,12 @@ def symmetric_fake_quantize(
         grouped, original_cols = _reshape_groups(work, group_size)
         granularity = f"per_{group_size}_group"
 
-    amax = grouped.abs().amax(dim=-1, keepdim=True)
+    if clip_percentile is not None:
+        if not 0.5 <= clip_percentile < 1.0:
+            raise ValueError("clip_percentile must be in [0.5, 1.0)")
+        amax = torch.quantile(grouped.abs(), clip_percentile, dim=-1, keepdim=True)
+    else:
+        amax = grouped.abs().amax(dim=-1, keepdim=True)
     zero = amax == 0
     scale = torch.where(zero, torch.ones_like(amax), amax / qmax)
     unrounded = grouped / scale
@@ -163,6 +171,8 @@ def symmetric_fake_quantize(
         input_abs_p999=_percentile(work, 0.999) if collect_percentiles else 0.0,
         scale_min=float(scale_values.amin().item()) if scale_values.numel() else 0.0,
         scale_max=float(scale_values.amax().item()) if scale_values.numel() else 0.0,
+        scale_method="PERCENTILE_CLIPPED_AMAX" if clip_percentile is not None else "AMAX",
+        clip_percentile=clip_percentile,
     )
     return dequant.to(x.dtype), codes, scales, stats
 
@@ -311,37 +321,83 @@ except Exception:  # pragma: no cover - import error is reported by the runners
 class QuantizedDynamicCache(DynamicCache):  # type: ignore[misc]
     """Dynamic cache that stores each new post-RoPE K/V entry quantized once."""
 
-    def __init__(self, bits: int, *, group_size: int | None = None) -> None:
+    def __init__(
+        self,
+        bits: int,
+        *,
+        v_bits: int | None = None,
+        group_size: int | None = None,
+        v_group_size: int | None = None,
+        clip_percentile: float | None = None,
+        v_clip_percentile: float | None = None,
+    ) -> None:
         super().__init__()
         self.bits = bits
+        self.k_bits = bits
+        self.v_bits = bits if v_bits is None else v_bits
         self.group_size = group_size
+        self.k_group_size = group_size
+        self.v_group_size = group_size if v_group_size is None else v_group_size
+        self.k_clip_percentile = clip_percentile
+        self.v_clip_percentile = clip_percentile if v_clip_percentile is None else v_clip_percentile
         self.update_count = 0
         self.value_count = 0
         self.clipped_count = 0
         self.endpoint_count = 0
         self.max_abs = 0.0
+        self.k_value_count = 0
+        self.v_value_count = 0
+        self.k_clipped_count = 0
+        self.v_clipped_count = 0
+        self.k_endpoint_count = 0
+        self.v_endpoint_count = 0
 
     def update(self, key_states, value_states, layer_idx, cache_kwargs=None):  # type: ignore[override]
         qk, _, _, sk = symmetric_fake_quantize(
-            key_states, self.bits, group_size=self.group_size, collect_percentiles=False
+            key_states,
+            self.k_bits,
+            group_size=self.k_group_size,
+            collect_percentiles=False,
+            clip_percentile=self.k_clip_percentile,
         )
         qv, _, _, sv = symmetric_fake_quantize(
-            value_states, self.bits, group_size=self.group_size, collect_percentiles=False
+            value_states,
+            self.v_bits,
+            group_size=self.v_group_size,
+            collect_percentiles=False,
+            clip_percentile=self.v_clip_percentile,
         )
         self.update_count += 1
         self.value_count += sk.value_count + sv.value_count
         self.clipped_count += sk.clipped_count + sv.clipped_count
         self.endpoint_count += sk.endpoint_count + sv.endpoint_count
         self.max_abs = max(self.max_abs, sk.input_abs_max, sv.input_abs_max)
+        self.k_value_count += sk.value_count
+        self.v_value_count += sv.value_count
+        self.k_clipped_count += sk.clipped_count
+        self.v_clipped_count += sv.clipped_count
+        self.k_endpoint_count += sk.endpoint_count
+        self.v_endpoint_count += sv.endpoint_count
         return super().update(qk, qv, layer_idx, cache_kwargs)
 
     def stats_dict(self) -> dict[str, Any]:
         return {
-            "bits": self.bits,
-            "code_mapping": f"reserved_min_symmetric_{signed_symmetric_range(self.bits)}",
-            "scale_granularity": "per_token_per_head"
-            if self.group_size is None
-            else f"per_token_per_head_group{self.group_size}",
+            "bits": self.bits if self.k_bits == self.v_bits else f"K{self.k_bits}/V{self.v_bits}",
+            "k_bits": self.k_bits,
+            "v_bits": self.v_bits,
+            "code_mapping": {
+                "k": f"reserved_min_symmetric_{signed_symmetric_range(self.k_bits)}",
+                "v": f"reserved_min_symmetric_{signed_symmetric_range(self.v_bits)}",
+            },
+            "scale_granularity": {
+                "k": "per_token_per_head" if self.k_group_size is None else f"per_token_per_head_group{self.k_group_size}",
+                "v": "per_token_per_head" if self.v_group_size is None else f"per_token_per_head_group{self.v_group_size}",
+            },
+            "scale_method": {
+                "k": "PERCENTILE_CLIPPED_AMAX" if self.k_clip_percentile is not None else "AMAX",
+                "v": "PERCENTILE_CLIPPED_AMAX" if self.v_clip_percentile is not None else "AMAX",
+            },
+            "clip_percentile": {"k": self.k_clip_percentile, "v": self.v_clip_percentile},
             "rounding": "RNE_TIES_EVEN",
             "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
             "update_count": self.update_count,
@@ -350,4 +406,16 @@ class QuantizedDynamicCache(DynamicCache):  # type: ignore[misc]
             "saturation_rate": self.clipped_count / max(self.value_count, 1),
             "endpoint_rate": self.endpoint_count / max(self.value_count, 1),
             "input_abs_max": self.max_abs,
+            "k": {
+                "value_count": self.k_value_count,
+                "clipped_count": self.k_clipped_count,
+                "saturation_rate": self.k_clipped_count / max(self.k_value_count, 1),
+                "endpoint_rate": self.k_endpoint_count / max(self.k_value_count, 1),
+            },
+            "v": {
+                "value_count": self.v_value_count,
+                "clipped_count": self.v_clipped_count,
+                "saturation_rate": self.v_clipped_count / max(self.v_value_count, 1),
+                "endpoint_rate": self.v_endpoint_count / max(self.v_value_count, 1),
+            },
         }

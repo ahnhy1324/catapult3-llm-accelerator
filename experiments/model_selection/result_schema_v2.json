@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ahnhy1324/catapult3-llm-accelerator/model-selection-result-v2.schema.json",
+  "title": "Catapult3 CPU model-selection v2 result",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "run_id",
+    "run_mode",
+    "status",
+    "evidence_tags",
+    "environment",
+    "model",
+    "checkpoint",
+    "backend",
+    "health",
+    "baseline",
+    "variants",
+    "performance",
+    "artifacts",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "catapult3-model-selection-result-v2"},
+    "run_id": {"type": "string", "minLength": 1},
+    "run_mode": {"enum": ["smoke", "full", "metadata_only"]},
+    "status": {"enum": ["PASS", "PARTIAL", "BLOCKED", "FAIL"]},
+    "evidence_tags": {
+      "type": "array",
+      "items": {"enum": ["MEASURED_CPU", "MEASURED_MODEL_FILE", "CALCULATED_FROM_CONFIG", "PROJECTED_FPGA", "ASSUMPTION", "BLOCKED"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "environment": {"type": "object"},
+    "model": {"type": "object", "required": ["model_id", "architecture", "parameter_class"]},
+    "checkpoint": {
+      "type": "object",
+      "required": ["revision", "manifest", "files"],
+      "properties": {
+        "revision": {"type": "string", "minLength": 7},
+        "manifest": {"type": "string", "minLength": 1},
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "byte_size", "sha256", "verification"],
+            "properties": {
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "byte_size": {"type": "integer", "minimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "backend": {"type": "object", "required": ["name", "revision", "execution_path"]},
+    "health": {
+      "type": "object",
+      "required": ["finite", "all_zero_tensors", "missing_tensors", "unexpected_tensors", "abnormal_scales"]
+    },
+    "baseline": {"type": "object", "required": ["logits_sha256", "prompts", "perplexity"]},
+    "variants": {"type": "array", "items": {"type": "object"}},
+    "performance": {"type": "object", "required": ["wall_seconds", "peak_rss_bytes"]},
+    "artifacts": {"type": "array"},
+    "blockers": {"type": "array"}
+  }
+}

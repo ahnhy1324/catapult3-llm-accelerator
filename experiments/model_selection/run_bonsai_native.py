@@ -20,6 +20,8 @@ from typing import Any
 
 import psutil
 
+from manifest_verify import inspect_gguf_magic, verify_artifact
+
 
 MODEL_ID = "prism-ml/Bonsai-1.7B-gguf"
 MODEL_REVISION = "210a9e99f79cb184909d49595906526eb2b3dd9a"
@@ -46,6 +48,7 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--max-new-tokens", type=int, default=16)
     parser.add_argument("--context", type=int, default=128)
     parser.add_argument("--ppl-chunks", type=int, default=4)
+    parser.add_argument("--manifest", type=Path, default=root / "artifact_manifest_v2.json")
     return parser.parse_args()
 
 
@@ -109,9 +112,26 @@ def main() -> None:
     for executable in (completion, perplexity_exe):
         if not executable.is_file():
             raise FileNotFoundError(executable)
-    require_bytes(args.model, MODEL_BYTES, MODEL_SHA256)
+    gguf_files = verify_artifact(
+        args.manifest.resolve(),
+        "bonsai-1.7b-q1-gguf",
+        args.model.parent,
+        required_roles={"gguf"},
+    )
+    gguf_health = inspect_gguf_magic(args.model)
+    runtime_files = verify_artifact(
+        args.manifest.resolve(),
+        "prism-runtime-extracted",
+        args.runtime_dir,
+        required_roles={"completion_exe", "completion_impl", "perplexity_exe", "perplexity_impl", "llama", "llama_common", "ggml", "ggml_base", "openmp"},
+    )
     if args.runtime_archive is not None:
-        require_bytes(args.runtime_archive, RUNTIME_ARCHIVE_BYTES, RUNTIME_ARCHIVE_SHA256)
+        verify_artifact(
+            args.manifest.resolve(),
+            "prism-runtime-archive",
+            args.runtime_archive.parent,
+            required_roles={"runtime_archive"},
+        )
 
     version, _, _ = run_measured([str(completion), "--version"])
     version_text = (version.stdout + version.stderr).strip()
@@ -173,11 +193,12 @@ def main() -> None:
         logits_bytes = logits_file.stat().st_size
 
     result = {
-        "schema_version": "catapult3-model-selection-result-v1",
+        "schema_version": "catapult3-model-selection-result-v2",
         "run_id": "bonsai-1.7b-q1_0-native-smoke-seed-20260830",
         "run_mode": "smoke",
         "status": "PASS",
         "evidence_scope": ["CPU_MEASURED", "MODEL_FILE_CALCULATED"],
+        "evidence_tags": ["MEASURED_CPU", "MEASURED_MODEL_FILE"],
         "environment": {
             "platform": "Windows x86_64",
             "seed": args.seed,
@@ -193,7 +214,8 @@ def main() -> None:
         },
         "checkpoint": {
             "revision": MODEL_REVISION,
-            "files": [{"name": args.model.name, "byte_size": MODEL_BYTES, "sha256": MODEL_SHA256, "verification": "LOCAL_BYTES"}],
+            "manifest": str(args.manifest),
+            "files": gguf_files,
         },
         "backend": {
             "name": "PrismML llama.cpp official Windows CPU release",
@@ -209,6 +231,7 @@ def main() -> None:
             "unexpected_tensors": [],
             "abnormal_scales": [],
             "inspection_scope": "strict GGUF loader success plus finite native evaluation; tensor-value scan is in unpacked-reference result",
+            "gguf_file": gguf_health,
         },
         "baseline": {
             "logits_sha256": logits_hash,
@@ -238,13 +261,17 @@ def main() -> None:
                 "name": RUNTIME_ARCHIVE,
                 "byte_size": RUNTIME_ARCHIVE_BYTES,
                 "sha256": RUNTIME_ARCHIVE_SHA256,
-                "verification": "LOCAL_BYTES" if args.runtime_archive is not None else "UPSTREAM_RELEASE_METADATA",
+                "verification": "MEASURED_LOCAL_BYTES" if args.runtime_archive is not None else "PINNED_MANIFEST_NOT_LOCALLY_REVERIFIED",
             }
-        ],
+        ] + [{"kind": "runtime_file", **record} for record in runtime_files],
         "blockers": [
             {
                 "code": "NATIVE_PROMPT_TOPK_NOT_EXPOSED",
                 "impact": "native full-logit hash is retained, while prompt top-k is supplied by the unpacked-reference adapter",
+            },
+            {
+                "code": "NATIVE_FIXED_BYTE_EXACT_SCORING_UNAVAILABLE",
+                "impact": "the pinned llama-perplexity build scores only the latter half of reset chunks and does not expose per-token NLL; tokenizer-fair BPB is measured with the official unpacked checkpoint in the Transformers adapter and is not fabricated here",
             }
         ],
     }

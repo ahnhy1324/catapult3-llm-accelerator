@@ -209,17 +209,53 @@ def capture_prompts(
             cache_stats.append(generation_cache.stats_dict())
         ids = [int(value) for value in generated.tolist()]
         top = torch.topk(logits, min(10, logits.numel()))
+        generated_text = tokenizer.decode(generated, skip_special_tokens=True)
         rows.append(
             {
                 "prompt": prompt,
                 "input_tokens": input_length,
                 "generated_token_ids": ids,
-                "generated_text": tokenizer.decode(generated, skip_special_tokens=True),
+                "generated_text": generated_text,
+                "health_flags": generation_health_flags(prompt, generated_text, ids),
                 "top10_token_ids": [int(value) for value in top.indices.tolist()],
                 "top10_logits": [float(value) for value in top.values.tolist()],
             }
         )
     return rows, logits_list, cache_stats
+
+
+def generation_health_flags(prompt: str, generated_text: str, token_ids: list[int]) -> list[str]:
+    flags: list[str] = []
+    stripped = generated_text.strip()
+    if not stripped:
+        flags.append("EMPTY_OUTPUT")
+    normalized_prompt = " ".join(prompt.lower().split())
+    normalized_output = " ".join(stripped.lower().split())
+    if normalized_prompt and (normalized_output.startswith(normalized_prompt) or normalized_prompt in normalized_output):
+        flags.append("PROMPT_ECHO")
+    else:
+        prompt_words = normalized_prompt.split()
+        output_words = normalized_output.split()
+        common_prefix_words = 0
+        for prompt_word, output_word in zip(prompt_words, output_words):
+            if prompt_word != output_word:
+                break
+            common_prefix_words += 1
+        if common_prefix_words >= min(6, len(prompt_words)):
+            flags.append("PROMPT_ECHO")
+    if len(token_ids) >= 8 and len(token_ids) % 2 == 0:
+        midpoint = len(token_ids) // 2
+        if token_ids[:midpoint] == token_ids[midpoint:]:
+            flags.append("REPEATED_SEQUENCE_X2")
+    if len(token_ids) >= 12:
+        grams = [tuple(token_ids[index : index + 4]) for index in range(len(token_ids) - 3)]
+        if grams and max(grams.count(gram) for gram in set(grams)) >= 3:
+            flags.append("REPETITION_4GRAM_X3")
+    if stripped and sum(character.isprintable() for character in stripped) / len(stripped) < 0.9:
+        flags.append("NONPRINTABLE_OUTPUT")
+    if "\ufffd" in stripped:
+        flags.append("UNICODE_REPLACEMENT_CHARACTER")
+    return flags
 
 
 def compare_prompt_sets(
@@ -243,6 +279,7 @@ def compare_prompt_sets(
                 break
             common += 1
         denominator = max(len(base_ids), len(ids), 1)
+        first_divergence = common if (common < len(base_ids) or common < len(ids)) else None
         positional = sum(int(left == right) for left, right in zip(base_ids, ids)) / denominator
         top1 = int(base_logits.argmax().item() == logits.argmax().item())
         base_top5 = set(torch.topk(base_logits, 5).indices.tolist())
@@ -252,6 +289,12 @@ def compare_prompt_sets(
         comparisons.append(
             {
                 "prompt": base_row["prompt"],
+                "baseline_generated_text": base_row["generated_text"],
+                "variant_generated_text": row["generated_text"],
+                "baseline_generated_token_ids": base_ids,
+                "variant_generated_token_ids": ids,
+                "baseline_health_flags": base_row.get("health_flags", []),
+                "variant_health_flags": row.get("health_flags", []),
                 "last_token_logit_cosine": float(F.cosine_similarity(base_logits, logits, dim=0).item()),
                 "last_token_logit_rmse": float(delta.square().mean().sqrt().item()),
                 "last_token_logit_max_error": float(delta.abs().amax().item()),
@@ -260,6 +303,7 @@ def compare_prompt_sets(
                 "top5_overlap": len(base_top5 & top5) / 5,
                 "top10_overlap": len(base_top10 & top10) / 10,
                 "greedy_common_prefix_tokens": common,
+                "first_divergence_position": first_divergence,
                 "positional_token_agreement": positional,
                 "exact_generation_agreement": base_ids == ids,
             }
@@ -333,10 +377,14 @@ def aggregate_cache_stats(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
     values = sum(int(row["value_count"]) for row in rows)
     clipped = sum(int(row["clipped_count"]) for row in rows)
     weighted_endpoints = sum(float(row["endpoint_rate"]) * int(row["value_count"]) for row in rows)
-    return {
+    result = {
         "bits": rows[0]["bits"],
+        "k_bits": rows[0].get("k_bits", rows[0]["bits"]),
+        "v_bits": rows[0].get("v_bits", rows[0]["bits"]),
         "code_mapping": rows[0]["code_mapping"],
         "scale_granularity": rows[0]["scale_granularity"],
+        "scale_method": rows[0].get("scale_method", "AMAX"),
+        "clip_percentile": rows[0].get("clip_percentile"),
         "rounding": rows[0]["rounding"],
         "clipping": rows[0]["clipping"],
         "update_count": sum(int(row["update_count"]) for row in rows),
@@ -346,14 +394,38 @@ def aggregate_cache_stats(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
         "endpoint_rate": weighted_endpoints / max(values, 1),
         "input_abs_max": max(float(row["input_abs_max"]) for row in rows),
     }
+    for kind in ("k", "v"):
+        if all(kind in row for row in rows):
+            kind_values = sum(int(row[kind]["value_count"]) for row in rows)
+            kind_clipped = sum(int(row[kind]["clipped_count"]) for row in rows)
+            result[kind] = {
+                "value_count": kind_values,
+                "clipped_count": kind_clipped,
+                "saturation_rate": kind_clipped / max(kind_values, 1),
+                "endpoint_rate": sum(
+                    float(row[kind]["endpoint_rate"]) * int(row[kind]["value_count"])
+                    for row in rows
+                )
+                / max(kind_values, 1),
+            }
+    return result
 
 
-def scan_model_health(model: Any, missing: list[str], unexpected: list[str]) -> dict[str, Any]:
+def scan_model_health(
+    model: Any,
+    missing: list[str],
+    unexpected: list[str],
+    *,
+    mismatched: list[Any] | None = None,
+    all_zero_whitelist: set[str] | None = None,
+) -> dict[str, Any]:
     all_zero: list[str] = []
     abnormal_scales: list[str] = []
     nonfinite: list[str] = []
     parameter_count = 0
-    for name, parameter in model.named_parameters():
+    parameter_names: list[str] = []
+    for name, parameter in model.named_parameters(remove_duplicate=False):
+        parameter_names.append(name)
         value = parameter.detach()
         parameter_count += value.numel()
         if not torch.isfinite(value).all():
@@ -362,12 +434,19 @@ def scan_model_health(model: Any, missing: list[str], unexpected: list[str]) -> 
             all_zero.append(name)
         if "scale" in name.lower() and (not torch.isfinite(value).all() or (value <= 0).any()):
             abnormal_scales.append(name)
+    whitelist = all_zero_whitelist or set()
+    unapproved_all_zero = sorted(set(all_zero) - whitelist)
+    duplicate_parameter_names = sorted({name for name in parameter_names if parameter_names.count(name) > 1})
     return {
         "finite": not nonfinite,
         "nonfinite_tensors": nonfinite,
         "all_zero_tensors": all_zero,
+        "all_zero_whitelist": sorted(whitelist),
+        "unapproved_all_zero_tensors": unapproved_all_zero,
         "missing_tensors": list(missing),
         "unexpected_tensors": list(unexpected),
+        "shape_mismatches": list(mismatched or []),
+        "duplicate_parameter_names": duplicate_parameter_names,
         "abnormal_scales": abnormal_scales,
         "parameter_count": parameter_count,
     }

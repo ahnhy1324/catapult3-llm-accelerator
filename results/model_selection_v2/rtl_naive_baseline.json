@@ -1,0 +1,45 @@
+{
+  "schema_version": "catapult3-rtl-naive-baseline-v1",
+  "device": "10AXF40GAE (Quartus 25.1 resolved 10AX115_JZ, speed grade 2)",
+  "evidence_tag": "PROJECTED_FPGA",
+  "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+  "note": "Registered-input single-stage reductions measured before the checked-in staged-reduction rewrite.",
+  "rows": [
+    {
+      "top": "bonsai_binary_g128_dot",
+      "lanes": 768,
+      "target_clock_mhz": 225,
+      "compile_pass": true,
+      "target_clock_met": false,
+      "alm": 25666,
+      "registers": 880,
+      "m20k_blocks": 0,
+      "dsp_blocks": 18,
+      "fmax_mhz": 67.64,
+      "setup_slack_ns": -10.340,
+      "worst_reported_data_delay_ns": 15.267,
+      "maximum_reported_logic_levels": 12,
+      "peak_interconnect_usage_percent": 22.0,
+      "worst_path": "weight_sign_reg[511] -> value_pipe[0][39]",
+      "initiation_interval_cycles": 1
+    },
+    {
+      "top": "bitnet_direct_ternary",
+      "lanes": 640,
+      "target_clock_mhz": 225,
+      "compile_pass": true,
+      "target_clock_met": false,
+      "alm": 86134,
+      "registers": 6939,
+      "m20k_blocks": 0,
+      "dsp_blocks": 0,
+      "fmax_mhz": 1.07,
+      "setup_slack_ns": -926.288,
+      "worst_reported_data_delay_ns": 930.856,
+      "maximum_reported_logic_levels": 1289,
+      "peak_interconnect_usage_percent": 46.5,
+      "worst_path": "packed_weight_reg[0][4] -> value_pipe[0][16]",
+      "initiation_interval_cycles": 1
+    }
+  ]
+}

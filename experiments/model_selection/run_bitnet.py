@@ -38,6 +38,8 @@ from common import (  # noqa: E402
     sha256_logits,
     tokenize_evaluation_text,
 )
+from fixed_byte_eval import add_baseline_ratios, score_fixed_bytes  # noqa: E402
+from manifest_verify import inspect_safetensors_header, verify_artifact  # noqa: E402
 from quantizers import QuantizedDynamicCache  # noqa: E402
 
 
@@ -102,6 +104,14 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20260830)
     parser.add_argument("--dtype", choices=("bfloat16", "float32"), default="bfloat16")
+    parser.add_argument("--manifest", type=Path, default=HERE / "artifact_manifest_v2.json")
+    parser.add_argument("--fixed-byte-corpus", type=Path)
+    parser.add_argument("--fixed-byte-contexts", type=int, nargs="+", default=(512, 2048))
+    parser.add_argument(
+        "--fixed-byte-variants",
+        default="row16_head_plus_KV4,block16x16_head_plus_KV4",
+        help="comma-separated variant names, or 'all'",
+    )
     return parser.parse_args()
 
 
@@ -145,6 +155,9 @@ def _evaluate_variant(
     max_new_tokens: int,
     sequence_length: int,
     kv_bits: int | None,
+    fixed_corpus: bytes | None = None,
+    fixed_contexts: tuple[int, ...] = (),
+    run_fixed: bool = False,
 ) -> dict[str, Any]:
     cache_factory = (lambda: QuantizedDynamicCache(kv_bits)) if kv_bits else None
     with Timer() as timer:
@@ -163,6 +176,19 @@ def _evaluate_variant(
             sequence_length=sequence_length,
             cache_factory=cache_factory,
         )
+        fixed_byte: dict[str, Any] = {}
+        if fixed_corpus is not None and run_fixed:
+            for context in fixed_contexts:
+                metrics, fixed_cache = score_fixed_bytes(
+                    model,
+                    tokenizer,
+                    fixed_corpus,
+                    device,
+                    context=context,
+                    cache_factory=cache_factory,
+                )
+                fixed_byte[str(context)] = metrics
+                ppl_cache.extend(fixed_cache)
     per_prompt, aggregate = compare_prompt_sets(baseline_rows, baseline_logits, rows, logits)
     aggregate["perplexity"] = ppl["perplexity"]
     aggregate["mean_nll"] = ppl["mean_nll"]
@@ -181,6 +207,7 @@ def _evaluate_variant(
             "kv": kv_stats,
             "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
         },
+        "fixed_byte": fixed_byte,
         "wall_seconds": timer.elapsed,
     }
 
@@ -196,12 +223,26 @@ def main() -> None:
     started = time.perf_counter()
     checkpoint_dir = args.checkpoint_dir.resolve()
     model_path = checkpoint_dir / MODEL_FILE
-    if not model_path.is_file():
-        raise SystemExit(f"missing checkpoint file: {model_path}")
-    actual_size = model_path.stat().st_size
-    actual_hash = sha256_file(model_path)
-    if actual_size != MODEL_BYTES or actual_hash != MODEL_SHA256:
-        raise SystemExit(f"checkpoint identity mismatch: size={actual_size}, sha256={actual_hash}")
+    required_roles = {
+        "weight", "config", "remote_configuration", "remote_modeling", "remote_quantization",
+        "remote_tokenizer", "tokenizer_json", "tokenizer_model", "tokenizer_config",
+        "special_tokens_map", "added_tokens", "generation_config",
+    }
+    verified_files = verify_artifact(
+        args.manifest.resolve(), "bitnet-0.7b", checkpoint_dir, required_roles=required_roles
+    )
+    verified_corpus = []
+    if args.fixed_byte_corpus:
+        verified_corpus = verify_artifact(
+            args.manifest.resolve(),
+            "fixed-byte-corpus-selected",
+            args.fixed_byte_corpus.resolve().parent,
+            required_roles={"corpus_selected"},
+        )
+    tensor_file_health = inspect_safetensors_header(model_path)
+    weight_record = next(record for record in verified_files if record["role"] == "weight")
+    actual_size = weight_record["byte_size"]
+    actual_hash = weight_record["sha256"]
 
     dtype = torch.bfloat16 if args.dtype == "bfloat16" else torch.float32
     BitnetConfig, BitnetForCausalLM, BitnetTokenizer = _load_checkpoint_classes(checkpoint_dir)
@@ -220,11 +261,17 @@ def main() -> None:
     device = torch.device("cpu")
     prompts = read_prompts(args.prompts_file)
     ids = tokenize_evaluation_text(tokenizer, args.ppl_text, predicted_tokens)
+    fixed_corpus = args.fixed_byte_corpus.read_bytes() if args.fixed_byte_corpus else None
+    fixed_contexts = tuple(dict.fromkeys(args.fixed_byte_contexts))
+    selected_fixed = {name for name in args.fixed_byte_variants.split(",") if name}
+    fixed_all = args.fixed_byte_variants == "all"
     health = scan_model_health(
         model,
         loading_info.get("missing_keys", []),
         loading_info.get("unexpected_keys", []),
+        mismatched=loading_info.get("mismatched_keys", []),
     )
+    health["tensor_file"] = tensor_file_health
 
     with LinearBoundaryQuantizer(model, bits=None, group_size=None) as profiler:
         baseline_rows, baseline_logits, _ = capture_prompts(
@@ -235,11 +282,18 @@ def main() -> None:
             max_new_tokens=max_new_tokens,
         )
     baseline_ppl, _ = perplexity(model, ids, device, sequence_length=sequence_length)
+    baseline_fixed: dict[str, Any] = {}
+    if fixed_corpus is not None:
+        for context in fixed_contexts:
+            baseline_fixed[str(context)], _ = score_fixed_bytes(
+                model, tokenizer, fixed_corpus, device, context=context
+            )
     baseline = {
         "logits_sha256": sha256_logits(baseline_logits),
         "prompts": baseline_rows,
         "perplexity": baseline_ppl,
         "activation_profile": profiler.stats_dict(),
+        "fixed_byte": baseline_fixed,
     }
 
     variants: list[dict[str, Any]] = []
@@ -259,6 +313,9 @@ def main() -> None:
                 max_new_tokens=max_new_tokens,
                 sequence_length=sequence_length,
                 kv_bits=bits,
+                fixed_corpus=fixed_corpus,
+                fixed_contexts=fixed_contexts,
+                run_fixed=fixed_all or f"KV{bits}_only" in selected_fixed,
             )
         )
 
@@ -293,6 +350,9 @@ def main() -> None:
             max_new_tokens=max_new_tokens,
             sequence_length=sequence_length,
             kv_bits=bits,
+            fixed_corpus=fixed_corpus,
+            fixed_contexts=fixed_contexts,
+            run_fixed=fixed_all or name in selected_fixed,
         )
         variant["quantizer"]["row16_head"] = row16_stats.to_dict()
         variant["quantizer"]["tie_info"] = tie_info
@@ -323,24 +383,55 @@ def main() -> None:
         max_new_tokens=max_new_tokens,
         sequence_length=sequence_length,
         kv_bits=None,
+        fixed_corpus=fixed_corpus,
+        fixed_contexts=fixed_contexts,
+        run_fixed=fixed_all or "block16x16_head_only" in selected_fixed,
     )
     block_variant["quantizer"]["block16x16_head"] = block16_stats.to_dict()
     block_variant["quantizer"]["tie_info"] = block_tie_info
     variants.append(block_variant)
+    block_kv4_variant = _evaluate_variant(
+        name="block16x16_head_plus_KV4",
+        components=["BLOCK16X16_HEAD", "KV4"],
+        model=model,
+        tokenizer=tokenizer,
+        prompts=prompts,
+        baseline_rows=baseline_rows,
+        baseline_logits=baseline_logits,
+        baseline_ppl=baseline_ppl,
+        ids=ids,
+        device=device,
+        max_new_tokens=max_new_tokens,
+        sequence_length=sequence_length,
+        kv_bits=4,
+        fixed_corpus=fixed_corpus,
+        fixed_contexts=fixed_contexts,
+        run_fixed=fixed_all or "block16x16_head_plus_KV4" in selected_fixed,
+    )
+    block_kv4_variant["quantizer"]["block16x16_head"] = block16_stats.to_dict()
+    block_kv4_variant["quantizer"]["tie_info"] = block_tie_info
+    variants.append(block_kv4_variant)
     _install_tied_weight(model, original)
     del original
     gc.collect()
 
     blockers: list[dict[str, Any]] = []
-    if not health["finite"] or health["missing_tensors"] or health["unexpected_tensors"]:
+    if (
+        not health["finite"]
+        or health["missing_tensors"]
+        or health["unexpected_tensors"]
+        or health["shape_mismatches"]
+        or health["unapproved_all_zero_tensors"]
+    ):
         blockers.append({"code": "MODEL_HEALTH_FAILURE", "detail": health})
     status = "PASS" if not blockers else "PARTIAL"
     result = {
-        "schema_version": "catapult3-model-selection-result-v1",
+        "schema_version": "catapult3-model-selection-result-v2",
         "run_id": f"bitnet-0.7b-{args.run_mode}-seed{args.seed}",
         "run_mode": args.run_mode,
         "status": status,
         "evidence_scope": ["CPU_MEASURED", "MODEL_FILE_CALCULATED"],
+        "evidence_tags": ["MEASURED_CPU", "MEASURED_MODEL_FILE", "CALCULATED_FROM_CONFIG"],
         "environment": environment_manifest(args.seed, args.threads),
         "model": {
             "candidate": "A",
@@ -352,14 +443,8 @@ def main() -> None:
         "checkpoint": {
             "revision": MODEL_REVISION,
             "license": "MIT",
-            "files": [
-                {
-                    "name": MODEL_FILE,
-                    "byte_size": actual_size,
-                    "sha256": actual_hash,
-                    "verification": "LOCAL_BYTES",
-                }
-            ],
+            "manifest": str(args.manifest),
+            "files": verified_files,
         },
         "backend": {
             "name": "Transformers trust_remote_code BitNet",
@@ -377,10 +462,14 @@ def main() -> None:
             "max_new_tokens_per_prompt": max_new_tokens,
         },
         "artifacts": [
-            {"kind": "checkpoint", "path": MODEL_FILE, "sha256": actual_hash, "byte_size": actual_size}
+            {"kind": "checkpoint", "path": MODEL_FILE, "sha256": actual_hash, "byte_size": actual_size},
+            *({"kind": "fixed_byte_corpus", **row} for row in verified_corpus),
         ],
         "blockers": blockers,
     }
+    for variant in result["variants"]:
+        for context, metrics in variant.get("fixed_byte", {}).items():
+            variant["fixed_byte"][context] = add_baseline_ratios(metrics, baseline_fixed[context])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({"status": status, "output": str(args.output), "variants": len(variants)}, indent=2))

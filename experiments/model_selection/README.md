@@ -1,102 +1,87 @@
-# Catapult3 CPU model selection v1
+# Catapult3 model selection
 
-This directory contains a reproducible CPU-only comparison for choosing the
-first Catapult3 Rev E end-to-end model target. It does not implement RTL or
-claim board measurements.
+This directory contains the reproducible CPU and projected-FPGA evidence used
+to choose the first Catapult3 Rev E end-to-end checkpoint. The original v1
+results remain under `experiments/model_selection/results/`; v2 results are
+written to `results/model_selection_v2/` and do not overwrite v1.
 
-The experiment separates three evidence classes in every result:
+## Evidence labels
 
-- `CPU_MEASURED`: fixed-checkpoint fake-quantization or official native-runtime
-  output measured on the host.
-- `MODEL_FILE_CALCULATED`: tensor geometry, hashes, and packed sizes derived
-  from pinned model files.
-- `CATAPULT_ASSUMPTION_ESTIMATE`: DDR and compute roofs based on explicitly
-  listed bandwidth, utilization, clock, and lane assumptions.
+- `MEASURED_CPU`: output produced by an executed CPU model, numeric reference,
+  unit test, or functional simulator.
+- `MEASURED_MODEL_FILE`: hashes, headers, and geometry read from pinned files.
+- `CALCULATED_FROM_CONFIG`: deterministic counts derived from pinned configs.
+- `PROJECTED_FPGA`: memory/compute roofs or post-fit Quartus estimates, not
+  board measurements.
+- `ASSUMPTION`: a selected bandwidth, utilization, lane, clock, or codec
+  contract.
+- `BLOCKED`: an explicitly unavailable comparison; no placeholder success.
 
-## Candidates and backends
+## Pinned candidates
 
-| Candidate | Weight contract | Evaluation backend |
+| Candidate | Role | Backend |
 |---|---|---|
-| `1bitLLM/bitnet_b1_58-large` | ternary body, public 0.7B reproduction | frozen checkpoint Python code + PyTorch CPU |
-| `prism-ml/Bonsai-1.7B-gguf` | binary `Q1_0` g128 | official PrismML llama.cpp release |
-| `prism-ml/Bonsai-1.7B-unpacked` | unpacked reference for boundary experiments | Transformers/PyTorch CPU |
-| Bonsai 4B/8B | binary `Q1_0` g128 geometry | metadata and roof calculation only |
+| `1bitLLM/bitnet_b1_58-large` | public 0.7B ternary reproduction | frozen checkpoint code + PyTorch |
+| `prism-ml/Bonsai-1.7B-gguf` | official binary Q1 g128 candidate | pinned PrismML llama.cpp release |
+| `prism-ml/Bonsai-1.7B-unpacked` | boundary/quantization reference | Transformers + PyTorch |
+| `tiiuae/Falcon3-1B-Instruct-1.58bit` | limited small instruct investigation | config/file projection; execution status in v2 report |
+| Bonsai 4B/8B | long-term geometry only | config and roof projection |
 
-The BitNet checkpoint is a public reproduction, not a Microsoft official
-checkpoint. Bonsai is binary `{-1,+1}` plus group scales; it is not ternary.
+BitNet 0.7B is a reproduction, not a Microsoft official checkpoint. Bonsai
+weights are binary `{-1,+1}` with group scales, not ternary.
 
-## Numerical contracts
+## V2 contracts
 
-- Activation and KV codes reserve the most-negative two's-complement value:
-  A/KV3 `[-3,3]`, A/KV4 `[-7,7]`, A/KV8 `[-127,127]`.
-- Scale is `amax / qmax`; zero groups use scale 1 and code 0.
-- Rounding is round-to-nearest, ties-to-even, followed by explicit clipping.
-- Activation scale is per token or per 128-element group. KV scale is per
-  token and head across head dimension, after RoPE for K.
-- Cached K/V prefixes are stored quantized once. A regression test proves a
-  later append does not requantize the prefix.
-- Bonsai binary-linear reference uses W1 g128, per-group integer dot products,
-  INT32/INT24/INT20 saturation candidates, and FP, unsigned Q4.20, or Q12
-  group-output scale paths.
-- Bankai row XOR is tested only at the biasless binary integer-accumulator
-  boundary. Flipping every sign in an output row must negate that accumulator
-  bit-exactly; attention and MLP shapes are tested separately.
-
-## Files
-
-- `run_bitnet.py`: baseline, KV8/4/3, row16 head, row16+KV4/3, and retained
-  block16x16 head comparison.
-- `run_bonsai.py`: BF16 reference, A12/A10/A8/A8-g128, KV8/4/3, and the
-  accumulator/scale matrix.
-- `run_bonsai_native.py`: official Q1_0 GGUF generation and PPL, including a
-  hash of the temporary full-logits binary.
-- `hardware_roof.py`: contexts 128/512/2048/4096, KV8/4/3, sustained
-  29/31/33/35 GB/s, 80/90/95% utilization, and 200/210/225/240 MHz.
-- `result_schema.json`: strict common result envelope.
-- `artifact_manifest.json`: pinned revisions, licenses, sizes, and SHA-256.
-- `environment.lock.txt`: exact packages used for the checked-in measurements.
-- `results/summary.md`: compact human-readable result.
+- `manifest_verify.py` hashes every file used by a run and fails closed before
+  model loading. Safetensors tensor names, shapes, dtypes, and ranges are also
+  checked; GGUF magic/version is checked before the strict native loader.
+- `fixed_byte_eval.py` scores the same pinned UTF-8 byte sequence for both
+  tokenizers. Its overlapping 512/2048-token windows retain prefix context but
+  score every target once. BPB is the cross-tokenizer metric; PPL ratios are
+  within-model only.
+- KV is quantized at cache write, after RoPE for K. K/V bit widths and scales
+  are independently configurable, codes reserve the signed minimum, and
+  rounding is ties-to-even followed by clipping/saturation.
+- `hardware_roof.py` includes the full LM head, keeps projection, attention,
+  scale, vector, top-k, and memory roofs separate, and labels host-head offload
+  separately from the fully-on-card headline mode.
+- `rtl/microbench/` compares binary g128, direct ternary, and TL5 at II=1 using
+  NumPy golden vectors and a reproducible exact-part Quartus flow.
+- Bankai row patches are valid only at the wide symmetric projection sum before
+  residual addition, narrowing, or asymmetric saturation. See the architecture
+  note and tests.
 
 ## Reproduction
 
-Create one environment and install the requirements:
+Create an environment and install the exact v2 dependencies:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\python -m pip install -r experiments/model_selection/requirements.txt
+python -m venv C:\msv2env
+C:\msv2env\Scripts\python.exe -m pip install -r experiments\model_selection\requirements-v2.txt
 ```
 
-Download checkpoints sequentially into directories outside Git. `hf download`
-can pin the exact snapshots:
+Place the pinned snapshots outside Git and verify them before use:
 
 ```powershell
-hf download 1bitLLM/bitnet_b1_58-large --revision 85d047191dcb224f0e04f20d26110caaf8dc1a47 --local-dir C:\models\bitnet-0.7b
-hf download prism-ml/Bonsai-1.7B-unpacked --revision a7f720bd688d7563714f3118edd97b83d06f0615 --local-dir C:\models\bonsai-1.7b-unpacked
-hf download prism-ml/Bonsai-1.7B-gguf Bonsai-1.7B-Q1_0.gguf --revision 210a9e99f79cb184909d49595906526eb2b3dd9a --local-dir C:\models\bonsai-1.7b-gguf
+python experiments\model_selection\manifest_verify.py --manifest experiments\model_selection\artifact_manifest_v2.json --artifact-key bitnet-0.7b --root C:\models\bitnet-0.7b --safetensors model.safetensors
+python experiments\model_selection\manifest_verify.py --manifest experiments\model_selection\artifact_manifest_v2.json --artifact-key bonsai-1.7b-unpacked --root C:\models\bonsai-1.7b-unpacked --safetensors model.safetensors
 ```
 
-Verify every downloaded byte against `artifact_manifest.json`, then run each
-model separately:
+The checked-in orchestration script supports `test`, `roof`, `summary`,
+`rtl-iverilog`, `rtl-quartus`, `bitnet`, `bonsai`, and `native-bonsai`
+targets:
 
-```powershell
-python experiments/model_selection/run_bitnet.py --checkpoint-dir C:\models\bitnet-0.7b --output experiments/model_selection/results/bitnet_0_7b_smoke.json
-python experiments/model_selection/run_bonsai.py --checkpoint-dir C:\models\bonsai-1.7b-unpacked --output experiments/model_selection/results/bonsai_1_7b_reference_smoke.json
-python experiments/model_selection/run_bonsai_native.py --runtime-dir C:\tools\prism-b10660-e311ed3 --runtime-archive C:\downloads\llama-prism-b10660-e311ed3-bin-win-cpu-x64.zip --model C:\models\bonsai-1.7b-gguf\Bonsai-1.7B-Q1_0.gguf --output experiments/model_selection/results/bonsai_1_7b_native_smoke.json
-python experiments/model_selection/hardware_roof.py --output experiments/model_selection/results/hardware_roof.json
-python -m pytest experiments/model_selection/tests -q
+```bash
+MODEL_SELECTION_ARTIFACT_ROOT=/models PYTHON_BIN=python \
+  scripts/run_model_selection_v2.sh test
 ```
 
-Use `--run-mode full` for 4096 predicted tokens in the PyTorch adapters. Smoke
-defaults are 256 predicted tokens, five prompts, seed 20260830, and eight CPU
-threads. The models are loaded sequentially; measured peak RSS was about
-5.14 GB for BitNet and 7.25 GB for the unpacked Bonsai reference, so the smoke
-path is suitable for a 16 GB host. Full mode is intentionally not represented
-by the checked-in smoke results.
+Large checkpoints, caches, native binaries, full-logit captures, and Quartus
+build databases must remain outside Git. The report at
+`docs/experiments/model-selection-cpu-v2.md` records measured commands,
+blockers, the selected bring-up checkpoint, and the separate headline target.
 
-## Interpretation boundary
-
-The fixed text is deliberately small and repeated when necessary to reach the
-token count. PPL values are comparable only within the same tokenizer/backend.
-They can catch catastrophic regressions but are not publication-grade quality
-evidence. See `docs/experiments/model-selection-cpu-v1.md` for the decision and
-the single experiment still required.
+On Windows, launch the limited Falcon run with `PYTHONUTF8=1`; PyTorch's
+Inductor package contains UTF-8 templates that the legacy CP949 default cannot
+read. The runner deliberately keeps the CPU weight-unpack reference eager, so
+an external MSVC compiler is not required for this bounded health smoke.

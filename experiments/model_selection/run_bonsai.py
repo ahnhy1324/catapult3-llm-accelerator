@@ -36,6 +36,8 @@ from common import (
     sha256_logits,
     tokenize_evaluation_text,
 )
+from fixed_byte_eval import add_baseline_ratios, score_fixed_bytes
+from manifest_verify import inspect_safetensors_header, verify_artifact
 from quantizers import QuantizedDynamicCache, binary_group_linear_reference
 
 
@@ -66,6 +68,15 @@ def arguments() -> argparse.Namespace:
     parser.add_argument("--threads", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20260830)
     parser.add_argument("--dtype", choices=("bfloat16", "float32"), default="bfloat16")
+    root = Path(__file__).resolve().parent
+    parser.add_argument("--manifest", type=Path, default=root / "artifact_manifest_v2.json")
+    parser.add_argument("--fixed-byte-corpus", type=Path)
+    parser.add_argument("--fixed-byte-contexts", type=int, nargs="+", default=(512, 2048))
+    parser.add_argument(
+        "--fixed-byte-variants",
+        default="A8_g128_plus_KV8,A10_g128_plus_KV8,A8_g128_plus_K4_V6,A8_g128_plus_K4_V5",
+        help="comma-separated variant names, or 'all'",
+    )
     return parser.parse_args()
 
 
@@ -85,9 +96,21 @@ def _evaluate_variant(
     sequence_length: int,
     activation_bits: int | None = None,
     activation_group_size: int | None = None,
-    kv_bits: int | None = None,
+    kv_k_bits: int | None = None,
+    kv_v_bits: int | None = None,
+    kv_clip_percentile: float | None = None,
+    fixed_corpus: bytes | None = None,
+    fixed_contexts: tuple[int, ...] = (),
+    run_fixed: bool = False,
 ) -> dict[str, Any]:
-    cache_factory = (lambda: QuantizedDynamicCache(kv_bits)) if kv_bits else None
+    cache_factory = (
+        lambda: QuantizedDynamicCache(
+            kv_k_bits,
+            v_bits=kv_v_bits,
+            clip_percentile=kv_clip_percentile,
+            v_clip_percentile=kv_clip_percentile,
+        )
+    ) if kv_k_bits else None
     quantizer = (
         LinearBoundaryQuantizer(model, bits=activation_bits, group_size=activation_group_size)
         if activation_bits
@@ -112,6 +135,19 @@ def _evaluate_variant(
                 sequence_length=sequence_length,
                 cache_factory=cache_factory,
             )
+            fixed_byte: dict[str, Any] = {}
+            if fixed_corpus is not None and run_fixed:
+                for context in fixed_contexts:
+                    metrics, fixed_cache = score_fixed_bytes(
+                        model,
+                        tokenizer,
+                        fixed_corpus,
+                        device,
+                        context=context,
+                        cache_factory=cache_factory,
+                    )
+                    fixed_byte[str(context)] = metrics
+                    ppl_cache.extend(fixed_cache)
         finally:
             if quantizer:
                 quantizer.__exit__(None, None, None)
@@ -120,8 +156,8 @@ def _evaluate_variant(
     aggregate["mean_nll"] = ppl["mean_nll"]
     aggregate["perplexity_ratio"] = ppl["perplexity"] / baseline_ppl["perplexity"]
     kv_stats = aggregate_cache_stats(prompt_cache + ppl_cache)
-    if kv_bits is not None and (kv_stats is None or kv_stats["update_count"] == 0):
-        raise RuntimeError(f"KV{kv_bits} cache adapter did not observe any updates")
+    if kv_k_bits is not None and (kv_stats is None or kv_stats["update_count"] == 0):
+        raise RuntimeError(f"K{kv_k_bits}/V{kv_v_bits or kv_k_bits} cache adapter did not observe any updates")
     return {
         "name": name,
         "components": components,
@@ -133,6 +169,7 @@ def _evaluate_variant(
             "activation": quantizer.stats_dict() if quantizer else None,
             "kv": kv_stats,
         },
+        "fixed_byte": fixed_byte,
         "wall_seconds": timer.elapsed,
     }
 
@@ -190,7 +227,12 @@ def _numeric_metrics(reference: torch.Tensor, candidate: torch.Tensor) -> dict[s
 def _accumulator_matrix(model: Any, captures: dict[str, torch.Tensor]) -> list[dict[str, Any]]:
     modules = dict(model.named_modules())
     results: list[dict[str, Any]] = []
-    activation_modes = [(12, None, "A12"), (10, None, "A10"), (8, None, "A8"), (8, 128, "A8_G128")]
+    activation_modes = [
+        (12, 128, "A12_G128"),
+        (10, 128, "A10_G128"),
+        (8, None, "A8_PER_TOKEN"),
+        (8, 128, "A8_G128"),
+    ]
     for name, activation in captures.items():
         module = modules[name]
         weight = module.weight.detach().cpu()[:64].to(torch.bfloat16)
@@ -240,22 +282,22 @@ def main() -> None:
     configure_runtime(args.seed, args.threads)
     started = time.perf_counter()
     checkpoint_dir = args.checkpoint_dir.resolve()
-    identities = [
-        (MODEL_FILE, MODEL_BYTES, MODEL_SHA256),
-        (TOKENIZER_FILE, TOKENIZER_BYTES, TOKENIZER_SHA256),
-    ]
-    verified_files = []
-    for filename, expected_size, expected_hash in identities:
-        path = checkpoint_dir / filename
-        if not path.is_file():
-            raise SystemExit(f"missing checkpoint file: {path}")
-        size = path.stat().st_size
-        digest = sha256_file(path)
-        if size != expected_size or digest != expected_hash:
-            raise SystemExit(f"identity mismatch for {filename}: size={size}, sha256={digest}")
-        verified_files.append(
-            {"name": filename, "byte_size": size, "sha256": digest, "verification": "LOCAL_BYTES"}
+    required_roles = {
+        "weight", "config", "tokenizer_json", "tokenizer_config", "special_tokens_map",
+        "added_tokens", "chat_template", "merges", "vocab", "generation_config",
+    }
+    verified_files = verify_artifact(
+        args.manifest.resolve(), "bonsai-1.7b-unpacked", checkpoint_dir, required_roles=required_roles
+    )
+    verified_corpus = []
+    if args.fixed_byte_corpus:
+        verified_corpus = verify_artifact(
+            args.manifest.resolve(),
+            "fixed-byte-corpus-selected",
+            args.fixed_byte_corpus.resolve().parent,
+            required_roles={"corpus_selected"},
         )
+    tensor_file_health = inspect_safetensors_header(checkpoint_dir / MODEL_FILE)
 
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -272,11 +314,17 @@ def main() -> None:
     device = torch.device("cpu")
     prompts = read_prompts(args.prompts_file)
     ids = tokenize_evaluation_text(tokenizer, args.ppl_text, predicted_tokens)
+    fixed_corpus = args.fixed_byte_corpus.read_bytes() if args.fixed_byte_corpus else None
+    fixed_contexts = tuple(dict.fromkeys(args.fixed_byte_contexts))
+    selected_fixed = {name for name in args.fixed_byte_variants.split(",") if name}
+    fixed_all = args.fixed_byte_variants == "all"
     health = scan_model_health(
         model,
         loading_info.get("missing_keys", []),
         loading_info.get("unexpected_keys", []),
+        mismatched=loading_info.get("mismatched_keys", []),
     )
+    health["tensor_file"] = tensor_file_health
 
     with LinearBoundaryQuantizer(model, bits=None, group_size=None) as profiler:
         baseline_rows, baseline_logits, _ = capture_prompts(
@@ -287,18 +335,25 @@ def main() -> None:
             max_new_tokens=max_new_tokens,
         )
     baseline_ppl, _ = perplexity(model, ids, device, sequence_length=sequence_length)
+    baseline_fixed: dict[str, Any] = {}
+    if fixed_corpus is not None:
+        for context in fixed_contexts:
+            baseline_fixed[str(context)], _ = score_fixed_bytes(
+                model, tokenizer, fixed_corpus, device, context=context
+            )
     baseline = {
         "logits_sha256": sha256_logits(baseline_logits),
         "prompts": baseline_rows,
         "perplexity": baseline_ppl,
         "activation_profile": profiler.stats_dict(),
         "baseline_scope": "UNPACKED_FP16_SEMANTIC_REFERENCE_NOT_NATIVE_Q1_KERNEL",
+        "fixed_byte": baseline_fixed,
     }
 
     variants: list[dict[str, Any]] = []
     for bits, group_size, name in (
-        (12, None, "A12_per_token"),
-        (10, None, "A10_per_token"),
+        (12, 128, "A12_per_128_group"),
+        (10, 128, "A10_per_128_group"),
         (8, None, "A8_per_token"),
         (8, 128, "A8_per_128_group"),
     ):
@@ -318,13 +373,24 @@ def main() -> None:
                 sequence_length=sequence_length,
                 activation_bits=bits,
                 activation_group_size=group_size,
+                fixed_corpus=fixed_corpus,
+                fixed_contexts=fixed_contexts,
+                run_fixed=fixed_all or name in selected_fixed,
             )
         )
-    for bits in (8, 4, 3):
+    for name, k_bits, v_bits, clip in (
+        ("KV8_only", 8, 8, None),
+        ("K4_V8_only", 4, 8, None),
+        ("K4_V6_only", 4, 6, None),
+        ("K4_V5_only", 4, 5, None),
+        ("KV4_only", 4, 4, None),
+        ("KV3_only", 3, 3, None),
+        ("KV4_percentile_0p999", 4, 4, 0.999),
+    ):
         variants.append(
             _evaluate_variant(
-                name=f"KV{bits}_only",
-                components=[f"KV{bits}"],
+                name=name,
+                components=[f"K{k_bits}", f"V{v_bits}"],
                 model=model,
                 tokenizer=tokenizer,
                 prompts=prompts,
@@ -335,7 +401,42 @@ def main() -> None:
                 device=device,
                 max_new_tokens=max_new_tokens,
                 sequence_length=sequence_length,
-                kv_bits=bits,
+                kv_k_bits=k_bits,
+                kv_v_bits=v_bits,
+                kv_clip_percentile=clip,
+                fixed_corpus=fixed_corpus,
+                fixed_contexts=fixed_contexts,
+                run_fixed=fixed_all or name in selected_fixed,
+            )
+        )
+
+    for name, activation_bits, k_bits, v_bits in (
+        ("A8_g128_plus_KV8", 8, 8, 8),
+        ("A10_g128_plus_KV8", 10, 8, 8),
+        ("A8_g128_plus_K4_V6", 8, 4, 6),
+        ("A8_g128_plus_K4_V5", 8, 4, 5),
+    ):
+        variants.append(
+            _evaluate_variant(
+                name=name,
+                components=[f"A{activation_bits}_G128", f"K{k_bits}", f"V{v_bits}"],
+                model=model,
+                tokenizer=tokenizer,
+                prompts=prompts,
+                baseline_rows=baseline_rows,
+                baseline_logits=baseline_logits,
+                baseline_ppl=baseline_ppl,
+                ids=ids,
+                device=device,
+                max_new_tokens=max_new_tokens,
+                sequence_length=sequence_length,
+                activation_bits=activation_bits,
+                activation_group_size=128,
+                kv_k_bits=k_bits,
+                kv_v_bits=v_bits,
+                fixed_corpus=fixed_corpus,
+                fixed_contexts=fixed_contexts,
+                run_fixed=fixed_all or name in selected_fixed,
             )
         )
 
@@ -347,14 +448,21 @@ def main() -> None:
             "detail": "This result uses the official unpacked semantic reference. The official PrismML Q1_0 runtime is recorded as a separate native result and must be considered jointly.",
         }
     ]
-    if not health["finite"] or health["missing_tensors"] or health["unexpected_tensors"]:
+    if (
+        not health["finite"]
+        or health["missing_tensors"]
+        or health["unexpected_tensors"]
+        or health["shape_mismatches"]
+        or health["unapproved_all_zero_tensors"]
+    ):
         blockers.append({"code": "MODEL_HEALTH_FAILURE", "detail": health})
     result = {
-        "schema_version": "catapult3-model-selection-result-v1",
+        "schema_version": "catapult3-model-selection-result-v2",
         "run_id": f"bonsai-1.7b-reference-{args.run_mode}-seed{args.seed}",
         "run_mode": args.run_mode,
         "status": "PARTIAL" if blockers else "PASS",
         "evidence_scope": ["CPU_MEASURED", "MODEL_FILE_CALCULATED"],
+        "evidence_tags": ["MEASURED_CPU", "MEASURED_MODEL_FILE", "CALCULATED_FROM_CONFIG"],
         "environment": environment_manifest(args.seed, args.threads),
         "model": {
             "candidate": "B",
@@ -366,13 +474,14 @@ def main() -> None:
         "checkpoint": {
             "revision": MODEL_REVISION,
             "license": "Apache-2.0",
+            "manifest": str(args.manifest),
             "files": verified_files
             + [
                 {
                     "name": "Bonsai-1.7B-Q1_0.gguf",
                     "byte_size": GGUF_BYTES,
                     "sha256": GGUF_SHA256,
-                    "verification": "UPSTREAM_LFS_METADATA",
+                    "verification": "PINNED_MANIFEST_EXPECTATION; verified separately by native runner",
                     "revision": GGUF_REVISION,
                 }
             ],
@@ -397,9 +506,12 @@ def main() -> None:
         "artifacts": [
             {"kind": "checkpoint", "path": row["name"], **row}
             for row in verified_files
-        ],
+        ] + [{"kind": "fixed_byte_corpus", **row} for row in verified_corpus],
         "blockers": blockers,
     }
+    for variant in result["variants"]:
+        for context, metrics in variant.get("fixed_byte", {}).items():
+            variant["fixed_byte"][context] = add_baseline_ratios(metrics, baseline_fixed[context])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     print(
