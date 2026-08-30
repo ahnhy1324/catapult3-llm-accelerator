@@ -1,0 +1,128 @@
+{
+  "schema_version": "catapult3-model-selection-result-v1",
+  "run_id": "bonsai-1.7b-q1_0-native-smoke-seed-20260830",
+  "run_mode": "smoke",
+  "status": "PASS",
+  "evidence_scope": [
+    "CPU_MEASURED",
+    "MODEL_FILE_CALCULATED"
+  ],
+  "environment": {
+    "platform": "Windows x86_64",
+    "seed": 20260830,
+    "threads": 8,
+    "deterministic_greedy": true
+  },
+  "model": {
+    "candidate": "Bonsai 1.7B true-1bit native GGUF",
+    "model_id": "prism-ml/Bonsai-1.7B-gguf",
+    "architecture": "Qwen3ForCausalLM / W1 Q1_0 g128",
+    "parameter_class": "1.7B",
+    "packed_model_size_bytes": 248302272
+  },
+  "checkpoint": {
+    "revision": "210a9e99f79cb184909d49595906526eb2b3dd9a",
+    "files": [
+      {
+        "name": "Bonsai-1.7B-Q1_0.gguf",
+        "byte_size": 248302272,
+        "sha256": "3d7c6c90dd98717a203adb22d5eacd2581850e40aa5327e144b97766cae5f7e3",
+        "verification": "LOCAL_BYTES"
+      }
+    ]
+  },
+  "backend": {
+    "name": "PrismML llama.cpp official Windows CPU release",
+    "revision": "e311ed38fe7ab8fb577a5435b049d48b7d040923",
+    "tag": "prism-b10660-e311ed3",
+    "execution_path": "llama-completion + llama-perplexity Q1_0 native",
+    "version_output": "version: 0.2.0-dev (build 10660, commit e311ed38f)\nbuilt with Clang 20.1.8 for Windows x86_64"
+  },
+  "health": {
+    "finite": true,
+    "all_zero_tensors": [],
+    "missing_tensors": [],
+    "unexpected_tensors": [],
+    "abnormal_scales": [],
+    "inspection_scope": "strict GGUF loader success plus finite native evaluation; tensor-value scan is in unpacked-reference result"
+  },
+  "baseline": {
+    "logits_sha256": "57e00d9ca99e5ace7afc2451de1f890359f8efeda1e62c0d1ab98e3fa7badaf1",
+    "logits_hash_scope": "llama-perplexity --save-all-logits binary",
+    "logits_file_bytes": 76445764,
+    "generation_output_sha256": "e472688ec5eb3acaad07feb98f2359a0a5bc2974432769ea5b4bd372e68cbb08",
+    "prompts": [
+      {
+        "prompt": "Explain in three concise sentences why the sky appears blue.",
+        "generated_text": "<think>\n<think>\n</think>\n\nThe sky appears blue because of the way sunlight interacts",
+        "generated_output_sha256": "f75a9f8a98a0122b4ea8e4aa4b76612a846e69f4112618dc0504e60f0b1b1e0d",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Write a correct Python function that returns whether an integer is prime.",
+        "generated_text": "<think>\n</think>\n\nSure! Here's a correct Python function that checks if an",
+        "generated_output_sha256": "e608b402ec8305a49be2255e0112cf8c6e150cd7c796025a16a2b3349992dbc2",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+        "generated_text": "<think>\n</think>\n\nAlice starts with 12 apples. She gives away",
+        "generated_output_sha256": "8a9829f5c19b7c70c32346e567a72c7a510ab8321a488915409727aefa8ee9eb",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+        "generated_text": "<think>\n</think>\n\n대한민국의 수도는 서울입니다. [end of text]",
+        "generated_output_sha256": "cd8ee4f4173c1f28ce260c34035cc6d839dd660e58ec46b00e76c28498f3628d",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+        "generated_text": "<think>\n<think>\n</think>\n\nAn old FPGA card can still be useful when it",
+        "generated_output_sha256": "fc89e724d69e88dfee5099071dadad7d51c52353c41ad4b290e7f6abaee9c788",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      }
+    ],
+    "perplexity": {
+      "predicted_tokens": 256,
+      "mean_nll": 4.673181108854593,
+      "perplexity": 107.0377,
+      "reported_uncertainty": 25.48712,
+      "context": 128,
+      "chunks": 4,
+      "evidence_label": "SMOKE_ONLY_REPEATED_FIXED_TEXT_NOT_PUBLICATION_GRADE"
+    }
+  },
+  "variants": [],
+  "performance": {
+    "wall_seconds": 5.722401200095192,
+    "peak_rss_bytes": 657903616,
+    "mean_native_generation_tokens_per_second": 208.53400000000002,
+    "generation_rate_samples": [
+      210.58,
+      206.08,
+      208.8,
+      209.56,
+      207.65
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "llama-prism-b10660-e311ed3-bin-win-cpu-x64.zip",
+      "byte_size": 18731604,
+      "sha256": "c87e4ae315d17b8ef9695001db7ad0f9eb8ab275c33d11c02395c64d844fe764",
+      "verification": "LOCAL_BYTES"
+    }
+  ],
+  "blockers": [
+    {
+      "code": "NATIVE_PROMPT_TOPK_NOT_EXPOSED",
+      "impact": "native full-logit hash is retained, while prompt top-k is supplied by the unpacked-reference adapter"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ahnhy1324/catapult3-llm-accelerator/model-selection-result-v1.schema.json",
+  "title": "Catapult3 CPU model-selection result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "run_mode",
+    "status",
+    "evidence_scope",
+    "environment",
+    "model",
+    "checkpoint",
+    "backend",
+    "health",
+    "baseline",
+    "variants",
+    "performance",
+    "artifacts",
+    "blockers"
+  ],
+  "properties": {
+    "schema_version": {"const": "catapult3-model-selection-result-v1"},
+    "run_id": {"type": "string", "minLength": 1},
+    "run_mode": {"enum": ["smoke", "full", "metadata_only"]},
+    "status": {"enum": ["PASS", "PARTIAL", "BLOCKED", "FAIL"]},
+    "evidence_scope": {
+      "type": "array",
+      "items": {"enum": ["CPU_MEASURED", "MODEL_FILE_CALCULATED", "CATAPULT_ASSUMPTION_ESTIMATE"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "environment": {"type": "object"},
+    "model": {
+      "type": "object",
+      "required": ["candidate", "model_id", "architecture", "parameter_class"],
+      "properties": {
+        "candidate": {"type": "string"},
+        "model_id": {"type": "string"},
+        "architecture": {"type": "string"},
+        "parameter_class": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "checkpoint": {
+      "type": "object",
+      "required": ["revision", "files"],
+      "properties": {
+        "revision": {"type": "string", "minLength": 7},
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "byte_size", "sha256", "verification"],
+            "properties": {
+              "name": {"type": "string"},
+              "byte_size": {"type": "integer", "minimum": 0},
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "verification": {"enum": ["LOCAL_BYTES", "UPSTREAM_LFS_METADATA"]}
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "backend": {
+      "type": "object",
+      "required": ["name", "revision", "execution_path"],
+      "properties": {
+        "name": {"type": "string"},
+        "revision": {"type": "string"},
+        "execution_path": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "health": {
+      "type": "object",
+      "required": ["finite", "all_zero_tensors", "missing_tensors", "unexpected_tensors", "abnormal_scales"],
+      "properties": {
+        "finite": {"type": "boolean"},
+        "all_zero_tensors": {"type": "array", "items": {"type": "string"}},
+        "missing_tensors": {"type": "array", "items": {"type": "string"}},
+        "unexpected_tensors": {"type": "array", "items": {"type": "string"}},
+        "abnormal_scales": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "baseline": {
+      "type": "object",
+      "required": ["logits_sha256", "prompts", "perplexity"],
+      "properties": {
+        "logits_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "prompts": {"type": "array"},
+        "perplexity": {"type": ["object", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "variants": {"type": "array", "items": {"type": "object"}},
+    "accumulator_scale_matrix": {"type": "array", "items": {"type": "object"}},
+    "performance": {
+      "type": "object",
+      "required": ["wall_seconds", "peak_rss_bytes"],
+      "properties": {
+        "wall_seconds": {"type": "number", "minimum": 0},
+        "peak_rss_bytes": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {"type": "array", "items": {"type": "object"}},
+    "blockers": {"type": "array", "items": {"type": "object"}}
+  }
+}

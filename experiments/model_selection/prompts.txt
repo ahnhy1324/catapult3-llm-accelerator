@@ -1,0 +1,5 @@
+Explain in three concise sentences why the sky appears blue.
+Write a correct Python function that returns whether an integer is prime.
+Alice has 12 apples and gives 5 away. Explain how many remain.
+대한민국의 수도는 어디인지 한 문장으로 답해 주세요.
+Continue with a short technical paragraph: An old FPGA card can still be useful when

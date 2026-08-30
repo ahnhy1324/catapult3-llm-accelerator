@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+.venv/
+cache/
+checkpoints/
+build/
+captures/
+results/*.tmp
+results/raw/
+*.gguf
+*.safetensors
