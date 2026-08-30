@@ -1,0 +1,93 @@
+name: BitNet NVFP4 CPU quality smoke
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/nvfp4-bitnet-cpu.yml"
+      - "experiments/nvfp4_bitnet/**"
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-quality-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      HF_HOME: ${{ github.workspace }}/.hf-cache
+      HF_HUB_ENABLE_HF_TRANSFER: "0"
+      TOKENIZERS_PARALLELISM: "false"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: experiments/nvfp4_bitnet/requirements.txt
+
+      - name: Install CPU dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+          python -m pip install "transformers>=4.51,<5" "accelerate>=0.30" "safetensors>=0.4" "huggingface_hub[hf_xet]" "pytest>=8"
+
+      - name: Unit-test NVFP4 quantizer
+        working-directory: experiments/nvfp4_bitnet
+        run: pytest -q
+
+      - name: Record runner resources
+        run: |
+          lscpu
+          free -h
+          df -h
+          python - <<'PY'
+          import torch, transformers
+          print("torch", torch.__version__)
+          print("transformers", transformers.__version__)
+          print("threads", torch.get_num_threads())
+          PY
+
+      - name: Create compact prompt set
+        working-directory: experiments/nvfp4_bitnet
+        run: |
+          cat > cpu_prompts.txt <<'EOF'
+          The capital of France is
+          Alice has 12 apples and gives 5 away. The number remaining is
+          EOF
+
+      - name: Run baseline vs row16 NVFP4 on CPU
+        working-directory: experiments/nvfp4_bitnet
+        run: |
+          mkdir -p results/cpu_smoke
+          /usr/bin/time -v python evaluate.py \
+            --device cpu \
+            --dtype bfloat16 \
+            --quant-work-device cpu \
+            --layouts row16 \
+            --chunk-rows 32 \
+            --prompts-file cpu_prompts.txt \
+            --skip-generation \
+            --output-dir results/cpu_smoke \
+            2>&1 | tee results/cpu_smoke/run.log
+
+      - name: Print report
+        if: always()
+        working-directory: experiments/nvfp4_bitnet
+        run: |
+          test -f results/cpu_smoke/report.md && cat results/cpu_smoke/report.md || true
+          test -f results/cpu_smoke/results.json && cat results/cpu_smoke/results.json || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nvfp4-bitnet-cpu-smoke
+          path: |
+            experiments/nvfp4_bitnet/results/cpu_smoke
+            experiments/nvfp4_bitnet/cpu_prompts.txt
+          if-no-files-found: warn
+          retention-days: 14
