@@ -1,0 +1,8 @@
+What is the capital of France? Answer in one short sentence.
+Alice has 12 apples, gives away 5, and buys 3 more. How many apples does she have?
+A box holds 6 rows of 8 bolts. Three bolts from each row are removed. Explain the calculation and give the result.
+Write a correct Python function named is_prime that returns whether an integer is prime.
+Explain in three concise sentences how an FPGA memory-bandwidth bottleneck limits LLM decoding.
+대한민국의 수도는 어디인지 한 문장으로 답해 주세요.
+저비트 KV 캐시가 언어 모델 추론의 메모리 사용량을 줄이는 원리를 두 문장으로 설명하세요.
+Continue this paragraph coherently for three sentences: An old FPGA card can still be useful when memory traffic, arithmetic width, and scheduling are designed together.

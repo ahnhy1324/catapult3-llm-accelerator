@@ -1,0 +1,1186 @@
+{
+  "artifacts": [
+    {
+      "byte_size": 2915408840,
+      "kind": "checkpoint",
+      "path": "model.safetensors",
+      "sha256": "100062646f1f85771ebe297c5e476642d171c2e0e916b2ed8d19dfbe201b4b52"
+    }
+  ],
+  "backend": {
+    "execution_path": "CPU_BFLOAT16_REFERENCE_WITH_NATIVE_BITNET_BODY_CONTRACT",
+    "name": "Transformers trust_remote_code BitNet",
+    "revision": "85d047191dcb224f0e04f20d26110caaf8dc1a47"
+  },
+  "baseline": {
+    "activation_profile": {
+      "bits": null,
+      "by_projection_kind": {
+        "attention": {
+          "abs_max": 7.5625,
+          "calls": 8160,
+          "endpoint_rate": 0.0006667704145346003,
+          "mean_sampled_call_abs_p50": 0.22228622436523438,
+          "mean_sampled_call_abs_p90": 0.5944137573242188,
+          "mean_sampled_call_abs_p99": 0.9805755615234375,
+          "mean_sampled_call_abs_p999": 1.3225346803665161,
+          "percentile_sampled_calls": 32,
+          "saturation_rate": 0.0,
+          "value_count": 42024960
+        },
+        "mlp": {
+          "abs_max": 25.625,
+          "calls": 6120,
+          "endpoint_rate": 0.00042792936116332496,
+          "mean_sampled_call_abs_p50": 0.146942138671875,
+          "mean_sampled_call_abs_p90": 0.39505767822265625,
+          "mean_sampled_call_abs_p99": 0.6822376251220703,
+          "mean_sampled_call_abs_p999": 1.0575251579284668,
+          "percentile_sampled_calls": 32,
+          "saturation_rate": 0.0,
+          "value_count": 49029120
+        }
+      },
+      "code_mapping": null,
+      "granularity": "profile_only",
+      "group_size": null,
+      "rounding": null
+    },
+    "logits_sha256": "32b7515500bb5d5e896638dd44f206a7b20609a5e0e0425daabeea269b22adbd",
+    "perplexity": {
+      "mean_nll": 6.708428552374244,
+      "perplexity": 819.2821683151027,
+      "predicted_tokens": 256
+    },
+    "prompts": [
+      {
+        "generated_text": "\nExplain in three concise sentences why the sky appears blue. (2",
+        "generated_token_ids": [
+          13,
+          9544,
+          7420,
+          297,
+          2211,
+          3022,
+          895,
+          25260,
+          2020,
+          278,
+          14744,
+          5692,
+          7254,
+          29889,
+          313,
+          29906
+        ],
+        "input_tokens": 14,
+        "prompt": "Explain in three concise sentences why the sky appears blue.",
+        "top10_logits": [
+          13.1875,
+          9.625,
+          9.125,
+          9.0625,
+          9.0,
+          8.9375,
+          8.875,
+          8.5625,
+          8.5,
+          8.4375
+        ],
+        "top10_token_ids": [
+          13,
+          2,
+          313,
+          450,
+          1724,
+          12027,
+          4803,
+          29871,
+          512,
+          3750
+        ]
+      },
+      {
+        "generated_text": "\nWrite a correct Python function that returns whether an integer is prime. The function",
+        "generated_token_ids": [
+          13,
+          6113,
+          263,
+          1959,
+          5132,
+          740,
+          393,
+          3639,
+          3692,
+          385,
+          6043,
+          338,
+          6019,
+          29889,
+          450,
+          740
+        ],
+        "input_tokens": 14,
+        "prompt": "Write a correct Python function that returns whether an integer is prime.",
+        "top10_logits": [
+          13.0,
+          9.25,
+          9.25,
+          8.875,
+          8.875,
+          8.875,
+          8.625,
+          8.625,
+          8.5,
+          8.4375
+        ],
+        "top10_token_ids": [
+          13,
+          450,
+          2,
+          910,
+          4803,
+          313,
+          1152,
+          887,
+          960,
+          29871
+        ]
+      },
+      {
+        "generated_text": "\nAlice has 12 apples and gives 5 away. Exp",
+        "generated_token_ids": [
+          13,
+          29909,
+          5897,
+          756,
+          29871,
+          29896,
+          29906,
+          623,
+          793,
+          322,
+          4076,
+          29871,
+          29945,
+          3448,
+          29889,
+          12027
+        ],
+        "input_tokens": 20,
+        "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+        "top10_logits": [
+          13.375,
+          11.0625,
+          9.625,
+          9.375,
+          9.375,
+          8.75,
+          8.625,
+          8.625,
+          8.5625,
+          8.5
+        ],
+        "top10_token_ids": [
+          13,
+          2,
+          1724,
+          1128,
+          29871,
+          313,
+          12027,
+          960,
+          25538,
+          3750
+        ]
+      },
+      {
+        "generated_text": "\n 작성일 2019년 12",
+        "generated_token_ids": [
+          13,
+          29871,
+          239,
+          161,
+          148,
+          31126,
+          31153,
+          29871,
+          29906,
+          29900,
+          29896,
+          29929,
+          31571,
+          29871,
+          29896,
+          29906
+        ],
+        "input_tokens": 37,
+        "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+        "top10_logits": [
+          12.0625,
+          12.0,
+          8.25,
+          7.75,
+          6.75,
+          6.6875,
+          6.03125,
+          6.03125,
+          6.03125,
+          5.96875
+        ],
+        "top10_token_ids": [
+          13,
+          29871,
+          2,
+          313,
+          259,
+          529,
+          518,
+          12,
+          239,
+          376
+        ]
+      },
+      {
+        "generated_text": "you need to do some simple calculations.\nContinue with a short technical paragraph",
+        "generated_token_ids": [
+          366,
+          817,
+          304,
+          437,
+          777,
+          2560,
+          17203,
+          29889,
+          13,
+          1323,
+          14150,
+          411,
+          263,
+          3273,
+          16905,
+          14880
+        ],
+        "input_tokens": 20,
+        "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+        "top10_logits": [
+          11.8125,
+          11.5625,
+          10.5625,
+          10.5,
+          10.5,
+          9.8125,
+          9.6875,
+          9.625,
+          9.625,
+          9.4375
+        ],
+        "top10_token_ids": [
+          366,
+          372,
+          278,
+          263,
+          1304,
+          2734,
+          596,
+          1985,
+          773,
+          16791
+        ]
+      }
+    ]
+  },
+  "blockers": [],
+  "checkpoint": {
+    "files": [
+      {
+        "byte_size": 2915408840,
+        "name": "model.safetensors",
+        "sha256": "100062646f1f85771ebe297c5e476642d171c2e0e916b2ed8d19dfbe201b4b52",
+        "verification": "LOCAL_BYTES"
+      }
+    ],
+    "license": "MIT",
+    "revision": "85d047191dcb224f0e04f20d26110caaf8dc1a47"
+  },
+  "environment": {
+    "byte_order": "little",
+    "deterministic_algorithms": true,
+    "numpy": "2.5.2",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.12.13",
+    "safetensors": "0.8.0",
+    "seed": 20260830,
+    "torch": "2.13.0+cpu",
+    "torch_threads": 8,
+    "transformers": "4.52.0.dev0"
+  },
+  "evidence_scope": [
+    "CPU_MEASURED",
+    "MODEL_FILE_CALCULATED"
+  ],
+  "health": {
+    "abnormal_scales": [],
+    "all_zero_tensors": [],
+    "finite": true,
+    "missing_tensors": [],
+    "nonfinite_tensors": [],
+    "parameter_count": 728842752,
+    "unexpected_tensors": []
+  },
+  "model": {
+    "architecture": "BitnetForCausalLM",
+    "candidate": "A",
+    "model_id": "1bitLLM/bitnet_b1_58-large",
+    "parameter_class": "0.7B",
+    "provenance": "PUBLIC_1bitLLM_REPRODUCTION_NOT_MICROSOFT_OFFICIAL"
+  },
+  "performance": {
+    "max_new_tokens_per_prompt": 16,
+    "peak_rss_bytes": 5135036416,
+    "predicted_tokens_per_variant": 256,
+    "prompt_count": 5,
+    "wall_seconds": 244.9035219999496
+  },
+  "run_id": "bitnet-0.7b-smoke-seed20260830",
+  "run_mode": "smoke",
+  "schema_version": "catapult3-model-selection-result-v1",
+  "status": "PASS",
+  "variants": [
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.6,
+        "max_last_token_logit_error": 0.34375,
+        "mean_common_prefix_tokens": 12.6,
+        "mean_kl_baseline_to_variant": 0.0009344222373329103,
+        "mean_last_token_logit_cosine": 0.9999246835708618,
+        "mean_last_token_logit_rmse": 0.06878580302000045,
+        "mean_nll": 6.712545648217201,
+        "mean_positional_token_agreement": 0.7875,
+        "mean_top10_overlap": 0.96,
+        "mean_top5_overlap": 0.96,
+        "perplexity": 822.6621846757293,
+        "perplexity_ratio": 1.004125582725153,
+        "prompt_count": 5,
+        "top1_match_rate": 1.0
+      },
+      "components": [
+        "KV8"
+      ],
+      "logits_sha256": "edfdb19555d59877eca470c65a28f7e2dca2d7d50657753c4f9ac69b0e6a4864",
+      "name": "KV8_only",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.0010430878028273582,
+          "last_token_logit_cosine": 0.9999292492866516,
+          "last_token_logit_max_error": 0.3125,
+          "last_token_logit_rmse": 0.0648309662938118,
+          "positional_token_agreement": 1.0,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 14,
+          "kl_baseline_to_variant": 0.0009824754670262337,
+          "last_token_logit_cosine": 0.9999118447303772,
+          "last_token_logit_max_error": 0.3125,
+          "last_token_logit_rmse": 0.07727521657943726,
+          "positional_token_agreement": 0.875,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.00032569962786510587,
+          "last_token_logit_cosine": 0.9999080896377563,
+          "last_token_logit_max_error": 0.3125,
+          "last_token_logit_rmse": 0.07273020595312119,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 1,
+          "kl_baseline_to_variant": 0.0007738154381513596,
+          "last_token_logit_cosine": 0.9999171495437622,
+          "last_token_logit_max_error": 0.34375,
+          "last_token_logit_rmse": 0.07478706538677216,
+          "positional_token_agreement": 0.0625,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.0015470328507944942,
+          "last_token_logit_cosine": 0.9999570846557617,
+          "last_token_logit_max_error": 0.25,
+          "last_token_logit_rmse": 0.054305560886859894,
+          "positional_token_agreement": 1.0,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": {
+          "bits": 8,
+          "clipped_count": 0,
+          "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
+          "code_mapping": "reserved_min_symmetric_(-127, 127)",
+          "endpoint_rate": 0.010787128809079602,
+          "input_abs_max": 48.25,
+          "rounding": "RNE_TIES_EVEN",
+          "saturation_rate": 0.0,
+          "scale_granularity": "per_token_per_head",
+          "update_count": 312,
+          "value_count": 34578432
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 30.727759200148284
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.8,
+        "max_last_token_logit_error": 0.791015625,
+        "mean_common_prefix_tokens": 13.0,
+        "mean_kl_baseline_to_variant": 0.003161971550434828,
+        "mean_last_token_logit_cosine": 0.9996210098266601,
+        "mean_last_token_logit_rmse": 0.14754948168992996,
+        "mean_nll": 6.851243434473872,
+        "mean_positional_token_agreement": 0.8125,
+        "mean_top10_overlap": 0.9199999999999999,
+        "mean_top5_overlap": 0.9199999999999999,
+        "perplexity": 945.0552907136529,
+        "perplexity_ratio": 1.1535162453946841,
+        "prompt_count": 5,
+        "top1_match_rate": 1.0
+      },
+      "components": [
+        "KV4"
+      ],
+      "logits_sha256": "e9a3c6c140767818b9ca2938c812aa41266c324c32e7ae4c641de40dc4ba49b5",
+      "name": "KV4_only",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.002686738036572933,
+          "last_token_logit_cosine": 0.9996160268783569,
+          "last_token_logit_max_error": 0.6875,
+          "last_token_logit_rmse": 0.14920812845230103,
+          "positional_token_agreement": 1.0,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.0019998596981167793,
+          "last_token_logit_cosine": 0.9996566772460938,
+          "last_token_logit_max_error": 0.71875,
+          "last_token_logit_rmse": 0.14292626082897186,
+          "positional_token_agreement": 1.0,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.003338368609547615,
+          "last_token_logit_cosine": 0.9995498657226562,
+          "last_token_logit_max_error": 0.703125,
+          "last_token_logit_rmse": 0.15965873003005981,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 1,
+          "kl_baseline_to_variant": 0.002407173626124859,
+          "last_token_logit_cosine": 0.9995090961456299,
+          "last_token_logit_max_error": 0.791015625,
+          "last_token_logit_rmse": 0.17218351364135742,
+          "positional_token_agreement": 0.0625,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.7,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.005377717781811953,
+          "last_token_logit_cosine": 0.999773383140564,
+          "last_token_logit_max_error": 0.5,
+          "last_token_logit_rmse": 0.11377077549695969,
+          "positional_token_agreement": 1.0,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": {
+          "bits": 4,
+          "clipped_count": 0,
+          "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
+          "code_mapping": "reserved_min_symmetric_(-7, 7)",
+          "endpoint_rate": 0.01767205638474295,
+          "input_abs_max": 48.25,
+          "rounding": "RNE_TIES_EVEN",
+          "saturation_rate": 0.0,
+          "scale_granularity": "per_token_per_head",
+          "update_count": 312,
+          "value_count": 34578432
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 29.242715100059286
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.8,
+        "max_last_token_logit_error": 1.75,
+        "mean_common_prefix_tokens": 13.4,
+        "mean_kl_baseline_to_variant": 0.01482347548007965,
+        "mean_last_token_logit_cosine": 0.9984419822692872,
+        "mean_last_token_logit_rmse": 0.28809786438941953,
+        "mean_nll": 6.885545531287789,
+        "mean_positional_token_agreement": 0.8375,
+        "mean_top10_overlap": 0.9,
+        "mean_top5_overlap": 0.9199999999999999,
+        "perplexity": 978.0350729342825,
+        "perplexity_ratio": 1.193770730962769,
+        "prompt_count": 5,
+        "top1_match_rate": 1.0
+      },
+      "components": [
+        "KV3"
+      ],
+      "logits_sha256": "24f6f63312d207dcd5c0058f1121e39a7e1e87d8528560e13c6004f79316e397",
+      "name": "KV3_only",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.006666157394647598,
+          "last_token_logit_cosine": 0.9987568855285645,
+          "last_token_logit_max_error": 1.09375,
+          "last_token_logit_rmse": 0.2542930841445923,
+          "positional_token_agreement": 1.0,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.006647089496254921,
+          "last_token_logit_cosine": 0.9990218281745911,
+          "last_token_logit_max_error": 1.09375,
+          "last_token_logit_rmse": 0.23880620300769806,
+          "positional_token_agreement": 1.0,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.012515063397586346,
+          "last_token_logit_cosine": 0.9983469843864441,
+          "last_token_logit_max_error": 1.24609375,
+          "last_token_logit_rmse": 0.29909956455230713,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.0074030449613928795,
+          "last_token_logit_cosine": 0.9970744252204895,
+          "last_token_logit_max_error": 1.75,
+          "last_token_logit_rmse": 0.4146580994129181,
+          "positional_token_agreement": 1.0,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 3,
+          "kl_baseline_to_variant": 0.04088602215051651,
+          "last_token_logit_cosine": 0.9990097880363464,
+          "last_token_logit_max_error": 1.3203125,
+          "last_token_logit_rmse": 0.23363237082958221,
+          "positional_token_agreement": 0.1875,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": {
+          "bits": 3,
+          "clipped_count": 0,
+          "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
+          "code_mapping": "reserved_min_symmetric_(-3, 3)",
+          "endpoint_rate": 0.03058762178689884,
+          "input_abs_max": 48.25,
+          "rounding": "RNE_TIES_EVEN",
+          "saturation_rate": 0.0,
+          "scale_granularity": "per_token_per_head",
+          "update_count": 312,
+          "value_count": 34578432
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 29.177296000067145
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.4,
+        "max_last_token_logit_error": 1.125,
+        "mean_common_prefix_tokens": 12.0,
+        "mean_kl_baseline_to_variant": 0.009175337292253971,
+        "mean_last_token_logit_cosine": 0.9992998838424683,
+        "mean_last_token_logit_rmse": 0.19688252806663514,
+        "mean_nll": 6.747521923854947,
+        "mean_positional_token_agreement": 0.7625,
+        "mean_top10_overlap": 0.9400000000000001,
+        "mean_top5_overlap": 0.9199999999999999,
+        "perplexity": 851.9449600437295,
+        "perplexity_ratio": 1.0398675730924298,
+        "prompt_count": 5,
+        "top1_match_rate": 0.8
+      },
+      "components": [
+        "ROW16_HEAD"
+      ],
+      "logits_sha256": "ea8180807aa1b5849d53a41a7be0e8c373088382e30bb16b309a75362cfcdb35",
+      "name": "row16_head_only",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 14,
+          "kl_baseline_to_variant": 0.006870612036436796,
+          "last_token_logit_cosine": 0.9992839694023132,
+          "last_token_logit_max_error": 0.96875,
+          "last_token_logit_rmse": 0.19323593378067017,
+          "positional_token_agreement": 0.875,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 14,
+          "kl_baseline_to_variant": 0.004563178867101669,
+          "last_token_logit_cosine": 0.9993932843208313,
+          "last_token_logit_max_error": 0.9375,
+          "last_token_logit_rmse": 0.1888943463563919,
+          "positional_token_agreement": 0.875,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.006100986618548632,
+          "last_token_logit_cosine": 0.9992924928665161,
+          "last_token_logit_max_error": 0.9375,
+          "last_token_logit_rmse": 0.19234059751033783,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 0,
+          "kl_baseline_to_variant": 0.018714874982833862,
+          "last_token_logit_cosine": 0.9992141723632812,
+          "last_token_logit_max_error": 1.125,
+          "last_token_logit_rmse": 0.2152225822210312,
+          "positional_token_agreement": 0.0625,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": false,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.009627033956348896,
+          "last_token_logit_cosine": 0.9993155002593994,
+          "last_token_logit_max_error": 0.9375,
+          "last_token_logit_rmse": 0.19471918046474457,
+          "positional_token_agreement": 1.0,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 1.0,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": null,
+        "row16_head": {
+          "cols": 1536,
+          "cosine_similarity": 0.9955212018881454,
+          "effective_bits_per_weight": 4.500000651000979,
+          "global_amax": 0.52734375,
+          "global_scale": 0.00019618443080357144,
+          "layout": "row16",
+          "max_abs_error": 0.04938614368438721,
+          "mse": 3.154330967742554e-05,
+          "normalized_mse": 0.008959776862265383,
+          "numel": 49155072,
+          "packed_bytes": 27649732,
+          "padded_cols": 1536,
+          "padded_rows": 32002,
+          "rows": 32002,
+          "saturation_fraction": 0.03510193210580589,
+          "scale_count": 3072192
+        },
+        "tie_info": {
+          "physically_tied": true,
+          "shape": [
+            32002,
+            1536
+          ]
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 31.332052800105885
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.4,
+        "max_last_token_logit_error": 1.21875,
+        "mean_common_prefix_tokens": 9.8,
+        "mean_kl_baseline_to_variant": 0.013114707730710506,
+        "mean_last_token_logit_cosine": 0.9989936113357544,
+        "mean_last_token_logit_rmse": 0.23561939597129822,
+        "mean_nll": 6.828663436695933,
+        "mean_positional_token_agreement": 0.6375,
+        "mean_top10_overlap": 0.8800000000000001,
+        "mean_top5_overlap": 0.96,
+        "perplexity": 923.9550624029039,
+        "perplexity_ratio": 1.1277617140173655,
+        "prompt_count": 5,
+        "top1_match_rate": 0.8
+      },
+      "components": [
+        "ROW16_HEAD",
+        "KV4"
+      ],
+      "logits_sha256": "0767384045cf1e0deafa2e8d04ea8ce5f3faf740f2e21efdfe8739e4c674bb44",
+      "name": "row16_head_plus_KV4",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 14,
+          "kl_baseline_to_variant": 0.014530237764120102,
+          "last_token_logit_cosine": 0.9986045956611633,
+          "last_token_logit_max_error": 1.21875,
+          "last_token_logit_rmse": 0.26906251907348633,
+          "positional_token_agreement": 0.875,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 3,
+          "kl_baseline_to_variant": 0.00761924684047699,
+          "last_token_logit_cosine": 0.999163031578064,
+          "last_token_logit_max_error": 1.0625,
+          "last_token_logit_rmse": 0.22122256457805634,
+          "positional_token_agreement": 0.25,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.007070683874189854,
+          "last_token_logit_cosine": 0.9989665150642395,
+          "last_token_logit_max_error": 1.1875,
+          "last_token_logit_rmse": 0.23854748904705048,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 0,
+          "kl_baseline_to_variant": 0.02110215276479721,
+          "last_token_logit_cosine": 0.9990440607070923,
+          "last_token_logit_max_error": 1.0,
+          "last_token_logit_rmse": 0.23767217993736267,
+          "positional_token_agreement": 0.0625,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": false,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.015251217409968376,
+          "last_token_logit_cosine": 0.9991898536682129,
+          "last_token_logit_max_error": 0.96875,
+          "last_token_logit_rmse": 0.21159222722053528,
+          "positional_token_agreement": 1.0,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": {
+          "bits": 4,
+          "clipped_count": 0,
+          "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
+          "code_mapping": "reserved_min_symmetric_(-7, 7)",
+          "endpoint_rate": 0.01765982332570777,
+          "input_abs_max": 48.0,
+          "rounding": "RNE_TIES_EVEN",
+          "saturation_rate": 0.0,
+          "scale_granularity": "per_token_per_head",
+          "update_count": 312,
+          "value_count": 34578432
+        },
+        "row16_head": {
+          "cols": 1536,
+          "cosine_similarity": 0.9955212018881454,
+          "effective_bits_per_weight": 4.500000651000979,
+          "global_amax": 0.52734375,
+          "global_scale": 0.00019618443080357144,
+          "layout": "row16",
+          "max_abs_error": 0.04938614368438721,
+          "mse": 3.154330967742554e-05,
+          "normalized_mse": 0.008959776862265383,
+          "numel": 49155072,
+          "packed_bytes": 27649732,
+          "padded_cols": 1536,
+          "padded_rows": 32002,
+          "rows": 32002,
+          "saturation_fraction": 0.03510193210580589,
+          "scale_count": 3072192
+        },
+        "tie_info": {
+          "physically_tied": true,
+          "shape": [
+            32002,
+            1536
+          ]
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 29.777234999928623
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.6,
+        "max_last_token_logit_error": 2.28125,
+        "mean_common_prefix_tokens": 13.2,
+        "mean_kl_baseline_to_variant": 0.017318163253366946,
+        "mean_last_token_logit_cosine": 0.9975371718406677,
+        "mean_last_token_logit_rmse": 0.3598535120487213,
+        "mean_nll": 6.703105993568897,
+        "mean_positional_token_agreement": 0.825,
+        "mean_top10_overlap": 0.86,
+        "mean_top5_overlap": 0.8800000000000001,
+        "perplexity": 814.9330752153064,
+        "perplexity_ratio": 0.9946915809131542,
+        "prompt_count": 5,
+        "top1_match_rate": 1.0
+      },
+      "components": [
+        "ROW16_HEAD",
+        "KV3"
+      ],
+      "logits_sha256": "fd7842d1fb3e690aaa16e64ea8348a949e452620cd2d478b050fd3e3e5497a26",
+      "name": "row16_head_plus_KV3",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.02124982327222824,
+          "last_token_logit_cosine": 0.9971628189086914,
+          "last_token_logit_max_error": 1.578125,
+          "last_token_logit_rmse": 0.38233059644699097,
+          "positional_token_agreement": 1.0,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 3,
+          "kl_baseline_to_variant": 0.00929582491517067,
+          "last_token_logit_cosine": 0.9986650943756104,
+          "last_token_logit_max_error": 1.3125,
+          "last_token_logit_rmse": 0.27873316407203674,
+          "positional_token_agreement": 0.1875,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 0.6
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.011159582063555717,
+          "last_token_logit_cosine": 0.9979879260063171,
+          "last_token_logit_max_error": 1.52734375,
+          "last_token_logit_rmse": 0.32623571157455444,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 15,
+          "kl_baseline_to_variant": 0.013554940931499004,
+          "last_token_logit_cosine": 0.9955339431762695,
+          "last_token_logit_max_error": 2.28125,
+          "last_token_logit_rmse": 0.5098059773445129,
+          "positional_token_agreement": 0.9375,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.031330645084381104,
+          "last_token_logit_cosine": 0.9983360767364502,
+          "last_token_logit_max_error": 1.6875,
+          "last_token_logit_rmse": 0.3021621108055115,
+          "positional_token_agreement": 1.0,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": {
+          "bits": 3,
+          "clipped_count": 0,
+          "clipping": "EXPLICIT_TO_SYMMETRIC_RANGE",
+          "code_mapping": "reserved_min_symmetric_(-3, 3)",
+          "endpoint_rate": 0.030679817985963042,
+          "input_abs_max": 48.0,
+          "rounding": "RNE_TIES_EVEN",
+          "saturation_rate": 0.0,
+          "scale_granularity": "per_token_per_head",
+          "update_count": 312,
+          "value_count": 34578432
+        },
+        "row16_head": {
+          "cols": 1536,
+          "cosine_similarity": 0.9955212018881454,
+          "effective_bits_per_weight": 4.500000651000979,
+          "global_amax": 0.52734375,
+          "global_scale": 0.00019618443080357144,
+          "layout": "row16",
+          "max_abs_error": 0.04938614368438721,
+          "mse": 3.154330967742554e-05,
+          "normalized_mse": 0.008959776862265383,
+          "numel": 49155072,
+          "packed_bytes": 27649732,
+          "padded_cols": 1536,
+          "padded_rows": 32002,
+          "rows": 32002,
+          "saturation_fraction": 0.03510193210580589,
+          "scale_count": 3072192
+        },
+        "tie_info": {
+          "physically_tied": true,
+          "shape": [
+            32002,
+            1536
+          ]
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 30.244470000034198
+    },
+    {
+      "aggregate": {
+        "exact_generation_agreement_rate": 0.4,
+        "max_last_token_logit_error": 1.5,
+        "mean_common_prefix_tokens": 10.0,
+        "mean_kl_baseline_to_variant": 0.015941698011010884,
+        "mean_last_token_logit_cosine": 0.9982039213180542,
+        "mean_last_token_logit_rmse": 0.3125334203243256,
+        "mean_nll": 6.711854008957744,
+        "mean_positional_token_agreement": 0.625,
+        "mean_top10_overlap": 0.8400000000000001,
+        "mean_top5_overlap": 0.96,
+        "perplexity": 822.0933959325231,
+        "perplexity_ratio": 1.0034313301645534,
+        "prompt_count": 5,
+        "top1_match_rate": 1.0
+      },
+      "components": [
+        "BLOCK16X16_HEAD"
+      ],
+      "logits_sha256": "f5ac6ba6e021a954a97c383ec538f0c883f95803091b99730a8b3cd293600024",
+      "name": "block16x16_head_only",
+      "per_prompt": [
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.007168057840317488,
+          "last_token_logit_cosine": 0.9980409145355225,
+          "last_token_logit_max_error": 1.34375,
+          "last_token_logit_rmse": 0.3187392055988312,
+          "positional_token_agreement": 1.0,
+          "prompt": "Explain in three concise sentences why the sky appears blue.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 14,
+          "kl_baseline_to_variant": 0.005592032801359892,
+          "last_token_logit_cosine": 0.9984452724456787,
+          "last_token_logit_max_error": 1.25,
+          "last_token_logit_rmse": 0.30068710446357727,
+          "positional_token_agreement": 0.875,
+          "prompt": "Write a correct Python function that returns whether an integer is prime.",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": true,
+          "greedy_common_prefix_tokens": 16,
+          "kl_baseline_to_variant": 0.006534476298838854,
+          "last_token_logit_cosine": 0.9980367422103882,
+          "last_token_logit_max_error": 1.3125,
+          "last_token_logit_rmse": 0.31901997327804565,
+          "positional_token_agreement": 1.0,
+          "prompt": "Alice has 12 apples and gives 5 away. Explain how many remain.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 1,
+          "kl_baseline_to_variant": 0.03910505026578903,
+          "last_token_logit_cosine": 0.9987518191337585,
+          "last_token_logit_max_error": 1.078125,
+          "last_token_logit_rmse": 0.27049338817596436,
+          "positional_token_agreement": 0.0625,
+          "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+          "top10_overlap": 0.8,
+          "top1_match": true,
+          "top5_overlap": 0.8
+        },
+        {
+          "exact_generation_agreement": false,
+          "greedy_common_prefix_tokens": 3,
+          "kl_baseline_to_variant": 0.02130887284874916,
+          "last_token_logit_cosine": 0.9977448582649231,
+          "last_token_logit_max_error": 1.5,
+          "last_token_logit_rmse": 0.35372743010520935,
+          "positional_token_agreement": 0.1875,
+          "prompt": "Continue with a short technical paragraph: An old FPGA card can still be useful when",
+          "top10_overlap": 0.9,
+          "top1_match": true,
+          "top5_overlap": 1.0
+        }
+      ],
+      "quantizer": {
+        "block16x16_head": {
+          "cols": 1536,
+          "cosine_similarity": 0.9935517933661491,
+          "effective_bits_per_weight": 4.0330142126533755,
+          "global_amax": 0.52734375,
+          "global_scale": 0.00019618443080357144,
+          "layout": "block16x16",
+          "max_abs_error": 0.055803537368774414,
+          "mse": 4.534128722431652e-05,
+          "normalized_mse": 0.012879048531438593,
+          "numel": 49155072,
+          "packed_bytes": 24780388,
+          "padded_cols": 1536,
+          "padded_rows": 32016,
+          "rows": 32002,
+          "saturation_fraction": 0.0025087339918859236,
+          "scale_count": 192096
+        },
+        "body_activation_contract": "UNCHANGED_NATIVE_BITNET_INPUT_INT8",
+        "kv": null,
+        "tie_info": {
+          "physically_tied": true,
+          "shape": [
+            32002,
+            1536
+          ]
+        }
+      },
+      "status": "PASS",
+      "wall_seconds": 29.187533300137147
+    }
+  ]
+}

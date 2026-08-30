@@ -1,0 +1,44 @@
+{
+  "schema_version": "catapult3-model-selection-toolchain-v1",
+  "python": {
+    "version": "3.13",
+    "environment_lock": "experiments/model_selection/environment-v2.lock.txt",
+    "status": "PASS",
+    "evidence_tag": "MEASURED_CPU"
+  },
+  "quartus": {
+    "version": "25.1.0 Build 129 Patch 0.36 SC Pro",
+    "executable": "E:/Altera/quartus/bin64/quartus_sh.exe",
+    "requested_part": "10AXF40GAE",
+    "resolved_device": "10AX115_JZ",
+    "family": "Arria 10 GX",
+    "speed_grade": 2,
+    "status": "PASS",
+    "evidence_tag": "PROJECTED_FPGA"
+  },
+  "questa_local": {
+    "version": "Questa Intel Starter FPGA Edition 2024.3",
+    "vlog_compile": "PASS_ZERO_ERRORS",
+    "vopt": "PASS",
+    "vsim": "BLOCKED_WINDOWS_0x80096010_AT_DESIGN_LOAD",
+    "status": "BLOCKED",
+    "evidence_tag": "BLOCKED"
+  },
+  "iverilog_local": {
+    "status": "BLOCKED_NOT_INSTALLED_AND_WSL_PACKAGE_DNS_UNAVAILABLE",
+    "evidence_tag": "BLOCKED"
+  },
+  "iverilog_github_actions": {
+    "status": "PASS",
+    "workflow": ".github/workflows/model-selection-v2.yml",
+    "run_url": "https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599",
+    "artifact_name": "model-selection-v2-small-results",
+    "artifact_url": "https://github.com/ahnhy1324/catapult3-llm-accelerator/actions/runs/33334886599/artifacts/9738727249",
+    "checks": [
+      "bit-exact NumPy golden comparison",
+      "244-cycle TL5 table build",
+      "bubble-free II=1 stream"
+    ],
+    "evidence_tag": "MEASURED_CPU"
+  }
+}

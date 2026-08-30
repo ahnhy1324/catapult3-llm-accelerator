@@ -1,0 +1,352 @@
+{
+  "schema_version": "catapult3-model-selection-result-v2",
+  "run_id": "bonsai-1.7b-q1_0-native-smoke-seed-20260830",
+  "run_mode": "smoke",
+  "status": "PASS",
+  "evidence_scope": [
+    "CPU_MEASURED",
+    "MODEL_FILE_CALCULATED"
+  ],
+  "evidence_tags": [
+    "MEASURED_CPU",
+    "MEASURED_MODEL_FILE"
+  ],
+  "environment": {
+    "platform": "Windows x86_64",
+    "seed": 20260830,
+    "threads": 8,
+    "deterministic_greedy": true
+  },
+  "model": {
+    "candidate": "Bonsai 1.7B true-1bit native GGUF",
+    "model_id": "prism-ml/Bonsai-1.7B-gguf",
+    "architecture": "Qwen3ForCausalLM / W1 Q1_0 g128",
+    "parameter_class": "1.7B",
+    "packed_model_size_bytes": 248302272
+  },
+  "checkpoint": {
+    "revision": "210a9e99f79cb184909d49595906526eb2b3dd9a",
+    "manifest": "experiments\\model_selection\\artifact_manifest_v2.json",
+    "files": [
+      {
+        "role": "gguf",
+        "name": "Bonsai-1.7B-Q1_0.gguf",
+        "byte_size": 248302272,
+        "sha256": "3d7c6c90dd98717a203adb22d5eacd2581850e40aa5327e144b97766cae5f7e3",
+        "verification": "MEASURED_LOCAL_BYTES"
+      }
+    ]
+  },
+  "backend": {
+    "name": "PrismML llama.cpp official Windows CPU release",
+    "revision": "e311ed38fe7ab8fb577a5435b049d48b7d040923",
+    "tag": "prism-b10660-e311ed3",
+    "execution_path": "llama-completion + llama-perplexity Q1_0 native",
+    "version_output": "version: 0.2.0-dev (build 10660, commit e311ed38f)\nbuilt with Clang 20.1.8 for Windows x86_64"
+  },
+  "health": {
+    "finite": true,
+    "all_zero_tensors": [],
+    "missing_tensors": [],
+    "unexpected_tensors": [],
+    "abnormal_scales": [],
+    "inspection_scope": "strict GGUF loader success plus finite native evaluation; tensor-value scan is in unpacked-reference result",
+    "gguf_file": {
+      "magic": "GGUF",
+      "version": 3,
+      "quantization_type_check": "DEFERRED_TO_PINNED_STRICT_RUNTIME_LOADER",
+      "evidence_tag": "MEASURED_MODEL_FILE"
+    }
+  },
+  "baseline": {
+    "logits_sha256": "57e00d9ca99e5ace7afc2451de1f890359f8efeda1e62c0d1ab98e3fa7badaf1",
+    "logits_hash_scope": "llama-perplexity --save-all-logits binary",
+    "logits_file_bytes": 76445764,
+    "generation_output_sha256": "00a509b60457ba4400a1180202f7feca05cf9914b1e211a45ac50de610f9165c",
+    "prompts": [
+      {
+        "prompt": "What is the capital of France? Answer in one short sentence.",
+        "generated_text": "<think>\n</think>\n\nParis is the capital of France. [end of text]",
+        "generated_output_sha256": "94fe6c5002d064ae269c0a25a7dd577a34502bdfda7360362b98591a91e542b4",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Alice has 12 apples, gives away 5, and buys 3 more. How many apples does she have?",
+        "generated_text": "<think>\nOkay, let's see. Alice starts with 12 apples.",
+        "generated_output_sha256": "51f6e0ff2e689c8482525aa6f64345fa665b2016a7689c9801339f1ba7b12c4b",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "A box holds 6 rows of 8 bolts. Three bolts from each row are removed. Explain the calculation and give the result.",
+        "generated_text": "<think>\nOkay, let's see. The box has 6 rows of",
+        "generated_output_sha256": "219a75fd7096cc32bb2c2f05686452d34225a7ee0fbbf6bed0bc71009c921d95",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Write a correct Python function named is_prime that returns whether an integer is prime.",
+        "generated_text": "<think>\n</think>\n\nSure! Here's a correct Python function named `is_prime",
+        "generated_output_sha256": "460f72b907309d723f71422ba57624d0e22a3fd9efb3a468e1d453bb29a422d5",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Explain in three concise sentences how an FPGA memory-bandwidth bottleneck limits LLM decoding.",
+        "generated_text": "<think>\n</think>\n\nAn FPGA memory-bandwidth bottleneck limits LLM decoding by restricting",
+        "generated_output_sha256": "caba35c413d96c87eefe3ba67f280dea534d2c4ab5a39a8c6e95803f24463fc2",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "대한민국의 수도는 어디인지 한 문장으로 답해 주세요.",
+        "generated_text": "<think>\n</think>\n\n대한민국의 수도는 서울입니다. [end of text]",
+        "generated_output_sha256": "cd8ee4f4173c1f28ce260c34035cc6d839dd660e58ec46b00e76c28498f3628d",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "저비트 KV 캐시가 언어 모델 추론의 메모리 사용량을 줄이는 원리를 두 문장으로 설명하세요.",
+        "generated_text": "<think>\n</think>\n\n저비트 KV 캐시가 언어 모",
+        "generated_output_sha256": "2474ea80ce25c9836229c91c63a9cc79163f53977edb3be0e3e8dd322530986c",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      },
+      {
+        "prompt": "Continue this paragraph coherently for three sentences: An old FPGA card can still be useful when memory traffic, arithmetic width, and scheduling are designed together.",
+        "generated_text": "<think>\n</think>\n\nAn old FPGA card can still be useful when memory traffic,",
+        "generated_output_sha256": "206ea9be297ac5878419c2b2ea83464aa62de95303d3e650edc47364b5ffa1e6",
+        "top10": null,
+        "top10_unavailable_reason": "official completion CLI does not expose full-vocabulary top-k"
+      }
+    ],
+    "perplexity": {
+      "predicted_tokens": 256,
+      "mean_nll": 4.673181108854593,
+      "perplexity": 107.0377,
+      "reported_uncertainty": 25.48712,
+      "context": 128,
+      "chunks": 4,
+      "evidence_label": "SMOKE_ONLY_REPEATED_FIXED_TEXT_NOT_PUBLICATION_GRADE"
+    }
+  },
+  "variants": [],
+  "performance": {
+    "wall_seconds": 8.422411700012162,
+    "peak_rss_bytes": 658223104,
+    "mean_native_generation_tokens_per_second": 202.39125,
+    "generation_rate_samples": [
+      200.65,
+      200.96,
+      203.35,
+      209.98,
+      199.93,
+      207.67,
+      199.16,
+      197.43
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "llama-prism-b10660-e311ed3-bin-win-cpu-x64.zip",
+      "byte_size": 18731604,
+      "sha256": "c87e4ae315d17b8ef9695001db7ad0f9eb8ab275c33d11c02395c64d844fe764",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "completion_exe",
+      "name": "llama-completion.exe",
+      "byte_size": 9216,
+      "sha256": "1ac2709736c1ef9b841383b0f3b007877ae7c4e00b161a168e15108f2641fd62",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "completion_impl",
+      "name": "llama-completion-impl.dll",
+      "byte_size": 133632,
+      "sha256": "1dfb76fa95bbe38f5ff9f7355e3efb7a37adc4759c108a797ff03e68e9366b27",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "perplexity_exe",
+      "name": "llama-perplexity.exe",
+      "byte_size": 9216,
+      "sha256": "cd03011352b4345e5c4cea0b68053b6091e32f9e2d1a3228b60e2bdeff23f8c6",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "perplexity_impl",
+      "name": "llama-perplexity-impl.dll",
+      "byte_size": 194048,
+      "sha256": "fcc63d0f541042e8a427af78f9263c00d0d529c88ef023777758bc90e493a221",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "llama",
+      "name": "llama.dll",
+      "byte_size": 3064320,
+      "sha256": "da2915e628e054e7593b89445f9455aa6ba4b8d253478cd97eba7a7cc1d6fd51",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "llama_common",
+      "name": "llama-common.dll",
+      "byte_size": 7746560,
+      "sha256": "8a7fbb91ffab5cffe2eba589110870fa0c84f01c8b206aba36db03dfab39e086",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "ggml",
+      "name": "ggml.dll",
+      "byte_size": 86016,
+      "sha256": "2a4b7c944b4d6c94313c9d6d5c23e40a880cf4a5b5f65c49c9e1edc48d2e633f",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "ggml_base",
+      "name": "ggml-base.dll",
+      "byte_size": 790016,
+      "sha256": "b7171acaba1fbb6c0aea11d2813a860380bb418db9f5518aa08cb2a1e5bf7d55",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "openmp",
+      "name": "libomp140.x86_64.dll",
+      "byte_size": 661856,
+      "sha256": "4a20c1e5c115c29771a12324513eb109badac72180f79481527ad79d996ffb33",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_alderlake",
+      "name": "ggml-cpu-alderlake.dll",
+      "byte_size": 1228288,
+      "sha256": "792a9dbe9cfb81a2311c12a0cfb37da6bb8f76a88a9e9be97136965b8db3a0ea",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_cannonlake",
+      "name": "ggml-cpu-cannonlake.dll",
+      "byte_size": 1441792,
+      "sha256": "9d8dd2ae6bbdc6dca302d98558cce21b1d9bca8e1bdaa269c0b45d5486213fbc",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_cascadelake",
+      "name": "ggml-cpu-cascadelake.dll",
+      "byte_size": 1436160,
+      "sha256": "08d1be855183e300dca760426f2269e1fb5a11d2220eca77897cb78027ec6520",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_cooperlake",
+      "name": "ggml-cpu-cooperlake.dll",
+      "byte_size": 1436672,
+      "sha256": "93cfa84edb23d9e2368289d7d7e8f26f038969497bbba95ccc6b979a486a71f4",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_haswell",
+      "name": "ggml-cpu-haswell.dll",
+      "byte_size": 1232896,
+      "sha256": "4098cd65eb8cac6fd37b5fc545d579d5bbcca3840a94a506cf757c7a4cae0aa0",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_icelake",
+      "name": "ggml-cpu-icelake.dll",
+      "byte_size": 1442816,
+      "sha256": "cd4d340cb124396c8b1d508d0f7dbab00f53dec86d7d53f5aa0e02dec98bdf81",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_ivybridge",
+      "name": "ggml-cpu-ivybridge.dll",
+      "byte_size": 1118720,
+      "sha256": "a23295aa9516e2015377edc6692e0068508521d95a4ea72020c0768205e3b083",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_piledriver",
+      "name": "ggml-cpu-piledriver.dll",
+      "byte_size": 1122816,
+      "sha256": "b64f9ffa5e6c18fb3fc5ba470d3bd01e94fad2a348577cd40faacbfe28811f0c",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_sandybridge",
+      "name": "ggml-cpu-sandybridge.dll",
+      "byte_size": 1098752,
+      "sha256": "816cdc6ee9dd14cd767186572fa1a8f41e3a82a53d884ccf8959d75c4d49084d",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_sapphirerapids",
+      "name": "ggml-cpu-sapphirerapids.dll",
+      "byte_size": 1725440,
+      "sha256": "34932d4f48fd7d7c0a70b4105823613600867e2883213830d93a83f0df3824e5",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_skylakex",
+      "name": "ggml-cpu-skylakex.dll",
+      "byte_size": 1435136,
+      "sha256": "34384ad932befac2de6850bb73b3b5672e900f8b622473f1992e9ad9feb7a7b1",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_sse42",
+      "name": "ggml-cpu-sse42.dll",
+      "byte_size": 923136,
+      "sha256": "c53772bf81d6751b6dfc1c9547bedbf77cad6b2052db819243398dfceedfe8af",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_x64",
+      "name": "ggml-cpu-x64.dll",
+      "byte_size": 914944,
+      "sha256": "158128d6e399e3bc91401dcaa514655e03c29d0db6f5b721c2f03d8ab2b173d8",
+      "verification": "MEASURED_LOCAL_BYTES"
+    },
+    {
+      "kind": "runtime_file",
+      "role": "cpu_zen4",
+      "name": "ggml-cpu-zen4.dll",
+      "byte_size": 1443328,
+      "sha256": "5f09e3209b7032a483218f2c646c3594c49832d9ec805abcbd39644a352f3851",
+      "verification": "MEASURED_LOCAL_BYTES"
+    }
+  ],
+  "blockers": [
+    {
+      "code": "NATIVE_PROMPT_TOPK_NOT_EXPOSED",
+      "impact": "native full-logit hash is retained, while prompt top-k is supplied by the unpacked-reference adapter"
+    },
+    {
+      "code": "NATIVE_FIXED_BYTE_EXACT_SCORING_UNAVAILABLE",
+      "impact": "the pinned llama-perplexity build scores only the latter half of reset chunks and does not expose per-token NLL; tokenizer-fair BPB is measured with the official unpacked checkpoint in the Transformers adapter and is not fabricated here"
+    }
+  ]
+}

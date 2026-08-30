@@ -1,0 +1,12 @@
+torch==2.13.0
+transformers==4.52.0.dev0
+accelerate==1.14.0
+safetensors==0.8.0
+sentencepiece==0.2.2
+protobuf==7.36.0
+huggingface-hub==0.36.2
+datasets==5.0.1
+psutil==7.2.2
+jsonschema==4.26.0
+pytest==9.1.1
+numpy==2.5.2

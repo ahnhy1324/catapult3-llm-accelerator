@@ -1,0 +1,327 @@
+{
+  "schema_version": "catapult3-model-selection-v2-summary-v1",
+  "source_results": [
+    "bitnet.json",
+    "bonsai_transformers.json",
+    "bonsai_native.json",
+    "falcon3-1b-instruct-limited.json",
+    "hardware_roof.json",
+    "rtl_sweep.json"
+  ],
+  "decision": {
+    "first_fpga_bring_up": {
+      "model": "BitNet 0.7B public reproduction",
+      "profile": "row16 head + KV4; direct ternary datapath",
+      "choice": "A",
+      "reason": "smallest e2e projection and only selected candidate above 100 tok/s at context 2048",
+      "quality_scope": "bring-up only because prompt echo/repetition and weak Korean were measured",
+      "evidence_tags": [
+        "MEASURED_CPU",
+        "CALCULATED_FROM_CONFIG",
+        "PROJECTED_FPGA"
+      ]
+    },
+    "headline_target": {
+      "model": "Bonsai 1.7B official Q1 g128",
+      "profile": "A8 g128 + KV8",
+      "reason": "official packed checkpoint/runtime, coherent generation, and stable measured joint codec",
+      "claim_scope": "fully on-card context 512; context 2048 is a modeled no-go",
+      "evidence_tags": [
+        "MEASURED_CPU",
+        "MEASURED_MODEL_FILE",
+        "PROJECTED_FPGA"
+      ]
+    }
+  },
+  "fixed_byte_corpus": {
+    "utf8_bytes": 24576,
+    "sha256": "c21856723534065f53feb61320d4276722b70680b61834e2f2abeb15ae572f6b",
+    "bitnet_tokens": 6262,
+    "bonsai_tokens": 5542,
+    "evidence_tag": "MEASURED_CPU"
+  },
+  "cpu_quality": {
+    "bitnet": {
+      "status": "PASS",
+      "baseline_bpb": {
+        "context_512": 1.1475821778969122,
+        "context_2048": 0.9907018932988977
+      },
+      "selected_joint_bpb": {
+        "context_512": 1.1587372771844848,
+        "context_2048": 0.9990801195014627
+      },
+      "selected_joint_smoke_ppl_ratio": 1.1277617140173655,
+      "selected_joint_exact_generation_agreement": 0.75,
+      "peak_rss_bytes": 7118209024,
+      "evidence_tag": "MEASURED_CPU"
+    },
+    "bonsai": {
+      "unpacked_status": "PARTIAL",
+      "baseline_bpb": {
+        "context_512": 1.0849767236964183,
+        "context_2048": 0.9934147440506358
+      },
+      "selected_joint_bpb": {
+        "context_512": 1.0839819043843901,
+        "context_2048": 0.9937125821722111
+      },
+      "selected_joint_smoke_ppl_ratio": 1.0157832821713506,
+      "selected_joint_exact_generation_agreement": 1.0,
+      "native_q1_status": "PASS",
+      "native_q1_cpu_tokens_per_second": 202.39125,
+      "peak_unpacked_rss_bytes": 8111529984,
+      "evidence_tag": "MEASURED_CPU"
+    },
+    "falcon_limited": {
+      "status": "PASS",
+      "smoke_ppl": 133.91535426745585,
+      "e2e_linear_weight_elements_per_token": 1400897536,
+      "disposition": "not expanded because its fully-on-card memory roof is about 35.6 tok/s",
+      "evidence_tags": [
+        "MEASURED_CPU",
+        "CALCULATED_FROM_CONFIG",
+        "PROJECTED_FPGA"
+      ]
+    }
+  },
+  "fully_on_card_roof": {
+    "scenario": {
+      "memory": "dual_x64_payload",
+      "selected_sustained_GBps": 31,
+      "pipeline_utilization": 0.9,
+      "clock_MHz": 225
+    },
+    "bitnet_row16_kv4_direct_672": [
+      {
+        "context": 512,
+        "projection_compute_roof_tps": 207.51206863840463,
+        "attention_compute_roof_tps": 1525.87890625,
+        "memory_roof_tps": 152.12208177640383,
+        "scale_multiply_roof_tps": 585.9008811949253,
+        "vector_compute_roof_tps": 105932.20338983051,
+        "topk_roof_tps": 22498.59383788513,
+        "final_bottleneck": "memory_roof_tps",
+        "final_bottleneck_roof_tps": 152.12208177640383,
+        "classification": "comfortable",
+        "evidence_tag": "PROJECTED_FPGA"
+      },
+      {
+        "context": 2048,
+        "projection_compute_roof_tps": 207.51206863840463,
+        "attention_compute_roof_tps": 381.4697265625,
+        "memory_roof_tps": 115.10483827056493,
+        "scale_multiply_roof_tps": 585.9008811949253,
+        "vector_compute_roof_tps": 105932.20338983051,
+        "topk_roof_tps": 22498.59383788513,
+        "final_bottleneck": "memory_roof_tps",
+        "final_bottleneck_roof_tps": 115.10483827056493,
+        "classification": "borderline",
+        "evidence_tag": "PROJECTED_FPGA"
+      }
+    ],
+    "bonsai_a8g128_kv8_binary_768": [
+      {
+        "context": 512,
+        "projection_compute_roof_tps": 100.4707089927685,
+        "attention_compute_roof_tps": 980.9221540178571,
+        "memory_roof_tps": 102.57852558936402,
+        "scale_multiply_roof_tps": 133.96094532369133,
+        "vector_compute_roof_tps": 62500.0,
+        "topk_roof_tps": 4747.17971371869,
+        "final_bottleneck": "projection_compute_roof_tps",
+        "final_bottleneck_roof_tps": 100.4707089927685,
+        "classification": "borderline",
+        "evidence_tag": "PROJECTED_FPGA"
+      },
+      {
+        "context": 2048,
+        "projection_compute_roof_tps": 100.4707089927685,
+        "attention_compute_roof_tps": 245.23053850446428,
+        "memory_roof_tps": 77.19051065125021,
+        "scale_multiply_roof_tps": 133.96094532369133,
+        "vector_compute_roof_tps": 62500.0,
+        "topk_roof_tps": 4747.17971371869,
+        "final_bottleneck": "memory_roof_tps",
+        "final_bottleneck_roof_tps": 77.19051065125021,
+        "classification": "no-go",
+        "evidence_tag": "PROJECTED_FPGA"
+      }
+    ]
+  },
+  "rtl_post_fit": [
+    {
+      "top": "bonsai_binary_g128_dot",
+      "lanes": 640,
+      "target_clock_mhz": 225,
+      "alm": 7947.0,
+      "registers": 11497.0,
+      "memory_bits": 0.0,
+      "m20k_blocks": 0.0,
+      "dsp_blocks": 5.0,
+      "fmax_mhz": 235.02,
+      "setup_slack_ns": 0.189,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 2,
+      "peak_interconnect_usage_percent": 12.8,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": false
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bonsai_binary_g128_dot",
+      "lanes": 768,
+      "target_clock_mhz": 225,
+      "alm": 9546.0,
+      "registers": 13770.0,
+      "memory_bits": 0.0,
+      "m20k_blocks": 0.0,
+      "dsp_blocks": 6.0,
+      "fmax_mhz": 233.7,
+      "setup_slack_ns": 0.165,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 2,
+      "peak_interconnect_usage_percent": 13.2,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": false
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bonsai_binary_g128_dot",
+      "lanes": 896,
+      "target_clock_mhz": 225,
+      "alm": 11090.0,
+      "registers": 15997.0,
+      "memory_bits": 0.0,
+      "m20k_blocks": 0.0,
+      "dsp_blocks": 7.0,
+      "fmax_mhz": 230.2,
+      "setup_slack_ns": 0.1,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 2,
+      "peak_interconnect_usage_percent": 14.8,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": false
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bitnet_direct_ternary",
+      "lanes": 640,
+      "target_clock_mhz": 225,
+      "alm": 18819.0,
+      "registers": 17270.0,
+      "memory_bits": 0.0,
+      "m20k_blocks": 0.0,
+      "dsp_blocks": 0.0,
+      "fmax_mhz": 259.4,
+      "setup_slack_ns": 0.589,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 2,
+      "peak_interconnect_usage_percent": 15.1,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": true
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bitnet_direct_ternary",
+      "lanes": 672,
+      "target_clock_mhz": 225,
+      "alm": 18656.0,
+      "registers": 16292.0,
+      "memory_bits": 0.0,
+      "m20k_blocks": 0.0,
+      "dsp_blocks": 0.0,
+      "fmax_mhz": 288.35,
+      "setup_slack_ns": 0.976,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 5,
+      "peak_interconnect_usage_percent": 13.8,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": true
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bitnet_tl5",
+      "lanes": 640,
+      "target_clock_mhz": 225,
+      "alm": 19063.0,
+      "registers": 32085.0,
+      "memory_bits": 1048576.0,
+      "m20k_blocks": 128.0,
+      "dsp_blocks": 0.0,
+      "fmax_mhz": 278.63,
+      "setup_slack_ns": 0.855,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 3,
+      "peak_interconnect_usage_percent": 21.2,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": true
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    },
+    {
+      "top": "bitnet_tl5",
+      "lanes": 672,
+      "target_clock_mhz": 225,
+      "alm": 20037.0,
+      "registers": 33869.0,
+      "memory_bits": 1105920.0,
+      "m20k_blocks": 135.0,
+      "dsp_blocks": 0.0,
+      "fmax_mhz": 264.48,
+      "setup_slack_ns": 0.663,
+      "setup_failing_endpoints": 0,
+      "maximum_reported_logic_levels": 3,
+      "peak_interconnect_usage_percent": 20.5,
+      "initiation_interval_cycles": 1,
+      "target_clock_met": true,
+      "clock_target_results_from_routed_fmax": {
+        "200": true,
+        "225": true,
+        "240": true
+      },
+      "measurement_kind": "QUARTUS_POST_FIT_TIMING_ESTIMATE",
+      "evidence_tag": "PROJECTED_FPGA"
+    }
+  ],
+  "blockers": {
+    "local_rtl_simulation": "Questa vlog/vopt pass, but vsim is blocked by Windows 0x80096010 at design load; GitHub Icarus is authoritative",
+    "board_measurement": "not run; Quartus rows are post-fit estimates, not board throughput"
+  },
+  "largest_remaining_risk": "full-system 225 MHz closure and sustained memory scheduling after projection, attention, scale, and top-k integration"
+}

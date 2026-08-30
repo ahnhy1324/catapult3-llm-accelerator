@@ -1,0 +1,80 @@
+name: model-selection-v2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "experiments/model_selection/**"
+      - "rtl/microbench/**"
+      - "scripts/run_model_selection_v2.sh"
+      - ".github/workflows/model-selection-v2.yml"
+  push:
+    branches:
+      - "work/model-selection-cpu-v2"
+    paths:
+      - "experiments/model_selection/**"
+      - "rtl/microbench/**"
+      - "scripts/run_model_selection_v2.sh"
+      - ".github/workflows/model-selection-v2.yml"
+
+jobs:
+  unit-and-roof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install test dependencies
+        run: |
+          pip install numpy psutil pytest jsonschema
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "transformers @ git+https://github.com/huggingface/transformers.git@096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4"
+      - name: Unit tests
+        run: python -m pytest experiments/model_selection/tests -q
+      - name: Rebuild roof tables
+        run: |
+          python experiments/model_selection/hardware_roof.py \
+            --output /tmp/hardware_roof.json \
+            --csv-output /tmp/hardware_roof.csv \
+            --no-scenarios
+          diff -u results/model_selection_v2/hardware_roof.json /tmp/hardware_roof.json
+          diff -u results/model_selection_v2/hardware_roof.csv /tmp/hardware_roof.csv
+      - name: Rebuild compact decision summary
+        run: |
+          python experiments/model_selection/build_summary.py \
+            --results-dir results/model_selection_v2 \
+            --output /tmp/summary.json
+          diff -u results/model_selection_v2/summary.json /tmp/summary.json
+
+  rtl-functional-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install simulator and golden-model dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog
+          pip install numpy
+      - name: Bit-exact and bubble-free RTL smoke
+        run: python rtl/microbench/run_iverilog.py
+
+  publish-small-results:
+    if: github.event_name == 'workflow_dispatch'
+    needs: [unit-and-roof, rtl-functional-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: model-selection-v2-small-results
+          path: |
+            results/model_selection_v2/*
+            docs/experiments/model-selection-cpu-v2.md
+          if-no-files-found: error

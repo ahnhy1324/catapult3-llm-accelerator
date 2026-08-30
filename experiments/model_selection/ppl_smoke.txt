@@ -1,0 +1,43 @@
+Reliable engineering begins by separating observations from assumptions. A
+measurement records what a particular system did under a frozen configuration.
+A calculation derives a value from model geometry or a numerical contract. An
+estimate combines those values with assumptions about a future machine. These
+three kinds of evidence can support the same decision, but they must not be
+presented as if they had equal certainty.
+
+A language-model accelerator reads packed weights, receives an activation
+vector, and produces partial sums. During autoregressive decoding the same
+weight matrices are streamed again for every generated token. The key and
+value cache grows with context length, so its traffic eventually competes with
+the weight stream. A useful roof model therefore includes the body, embedding
+lookup, language-model head, cache data, cache scales, and any other metadata.
+
+Low precision changes both capacity and arithmetic. A symmetric signed
+quantizer chooses a scale from the largest magnitude, rounds to the nearest
+representable integer, and clips values outside its code range. The rounding
+rule matters at exact half steps. The scale granularity matters because a
+single outlier can reduce precision for every other value in its group. A
+small smoke experiment can reveal broken mappings, saturation, missing model
+tensors, or catastrophic quality loss, but it cannot establish publication
+quality by itself.
+
+Binary weights make multiplication simple: each sign selects addition or
+subtraction. If a biasless output row is flipped from positive to negative and
+negative to positive, its exact integer accumulator changes sign. This
+identity holds before nonlinear functions and before an asymmetric saturation
+boundary. A hardware design can exploit the identity only when its scope is
+stated precisely and verified with integer tests.
+
+Memory bandwidth is also a contract. Raw DDR transfer rate is not the same as
+sustained payload bandwidth. Refresh, command gaps, arbitration, and imperfect
+burst scheduling reduce usable traffic. A constant-rate compute pipeline needs
+elastic buffering so short memory stalls do not starve its processing lanes.
+Performance projections should show several sustained bandwidth and utilization
+points instead of choosing one optimistic number.
+
+The first FPGA target should preserve useful model quality while leaving enough
+traffic and compute margin for attention, normalization, and control. A smaller
+model can be easier to stream but may have weaker language capability. A larger
+one-bit model may offer better quality, yet its language-model head and long
+context cache can consume the margin needed to exceed one hundred tokens per
+second. A reproducible comparison makes that tradeoff visible.
