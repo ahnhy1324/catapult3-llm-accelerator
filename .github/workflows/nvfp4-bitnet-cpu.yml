@@ -1,4 +1,4 @@
-name: BitNet NVFP4 CPU quality smoke
+name: BitNet NVFP4 CPU quality comparison
 
 on:
   workflow_dispatch:
@@ -11,13 +11,14 @@ permissions:
   contents: read
 
 jobs:
-  cpu-quality-smoke:
+  cpu-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     env:
       HF_HOME: ${{ github.workspace }}/.hf-cache
       HF_HUB_ENABLE_HF_TRANSFER: "0"
       TOKENIZERS_PARALLELISM: "false"
+      PYTHONUNBUFFERED: "1"
       OMP_NUM_THREADS: "4"
       MKL_NUM_THREADS: "4"
     steps:
@@ -35,7 +36,8 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
           python -m pip install \
             "git+https://github.com/huggingface/transformers.git@096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4" \
-            "accelerate>=0.30" "safetensors>=0.4" "huggingface_hub[hf_xet]" "pytest>=8"
+            "accelerate>=0.30" "safetensors>=0.4" "huggingface_hub[hf_xet]" \
+            "datasets>=2.19" "pytest>=8"
 
       - name: Unit-test NVFP4 quantizer
         working-directory: experiments/nvfp4_bitnet
@@ -71,39 +73,43 @@ jobs:
           cat > cpu_prompts.txt <<'EOF'
           The capital of France is
           Alice has 12 apples and gives 5 away. The number remaining is
+          Continue this sentence with a short technical paragraph: An old FPGA card can still be useful when
           EOF
 
-      - name: Run baseline vs row16 NVFP4 on CPU
+      - name: Run baseline, row16 and block16x16 on CPU
         working-directory: experiments/nvfp4_bitnet
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p results/cpu_smoke
+          mkdir -p results/cpu_quality
           /usr/bin/time -v python evaluate.py \
             --device cpu \
             --dtype bfloat16 \
             --quant-work-device cpu \
-            --layouts row16 \
+            --layouts row16 block16x16 \
             --chunk-rows 32 \
             --prompts-file cpu_prompts.txt \
-            --skip-generation \
-            --output-dir results/cpu_smoke \
-            2>&1 | tee results/cpu_smoke/run.log
+            --max-new-tokens 12 \
+            --ppl \
+            --ppl-tokens 1024 \
+            --ppl-seq-len 256 \
+            --output-dir results/cpu_quality \
+            2>&1 | tee results/cpu_quality/run.log
 
       - name: Print report
         if: always()
         working-directory: experiments/nvfp4_bitnet
         run: |
-          test -f results/cpu_smoke/report.md && cat results/cpu_smoke/report.md || true
-          test -f results/cpu_smoke/results.json && cat results/cpu_smoke/results.json || true
+          test -f results/cpu_quality/report.md && cat results/cpu_quality/report.md || true
+          test -f results/cpu_quality/results.json && cat results/cpu_quality/results.json || true
 
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nvfp4-bitnet-cpu-smoke
+          name: nvfp4-bitnet-cpu-quality
           path: |
-            experiments/nvfp4_bitnet/results/cpu_smoke
+            experiments/nvfp4_bitnet/results/cpu_quality
             experiments/nvfp4_bitnet/cpu_prompts.txt
           if-no-files-found: warn
           retention-days: 14
