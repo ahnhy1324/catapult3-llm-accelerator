@@ -3,3 +3,4 @@ transformers>=4.51
 accelerate>=0.30
 safetensors>=0.4
 datasets>=2.19
+pytest>=8
