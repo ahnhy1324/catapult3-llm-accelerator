@@ -36,9 +36,10 @@ These are architecture targets, not measured claims:
 
 All headline numbers must be replaced by measured cycle counts, post-fit Fmax, real sustained DDR bandwidth, KV cost, and MTP acceptance before being treated as results.
 
-## Documentation
+## Documentation and experiments
 
 - [`TODO.md`](TODO.md) — full architecture / validation / synthesis checklist
+- [`experiments/nvfp4_bitnet/`](experiments/nvfp4_bitnet/) — BitNet tied embedding/LM-head NVFP4 fake-quant quality demo
 - Notion planning page: https://app.notion.com/p/3cb30fe6e4e68167bf3bde0a4bdb6b5d?pvs=204
 
 ## Project boundary
