@@ -376,7 +376,7 @@ def main() -> None:
     if args.csv_output and csv_rows:
         args.csv_output.parent.mkdir(parents=True, exist_ok=True)
         with args.csv_output.open("w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=list(csv_rows[0]))
+            writer = csv.DictWriter(handle, fieldnames=list(csv_rows[0]), lineterminator="\n")
             writer.writeheader()
             writer.writerows(csv_rows)
 
