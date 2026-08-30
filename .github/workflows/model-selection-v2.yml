@@ -31,6 +31,7 @@ jobs:
         run: |
           pip install numpy psutil pytest jsonschema
           pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "transformers @ git+https://github.com/huggingface/transformers.git@096f25ae1f501a084d8ff2dcaf25fbc2bd60eba4"
       - name: Unit tests
         run: python -m pytest experiments/model_selection/tests -q
       - name: Rebuild roof tables
