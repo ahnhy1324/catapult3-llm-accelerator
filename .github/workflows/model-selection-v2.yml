@@ -29,7 +29,7 @@ jobs:
           cache: pip
       - name: Install test dependencies
         run: |
-          pip install numpy pytest jsonschema
+          pip install numpy psutil pytest jsonschema
           pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: Unit tests
         run: python -m pytest experiments/model_selection/tests -q
